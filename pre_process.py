@@ -1,4 +1,5 @@
 import os
+
 def get_file_line(file_name):
 
 	non_blank_count = 0
