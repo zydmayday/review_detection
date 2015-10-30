@@ -7,9 +7,13 @@ from sets import Set
 from collections import Counter
 import re
 import file_util
+import ast
 
-FU = file_util.FileUtil('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
-FU.get_structure()
+fu = file_util.FileUtil()
+
+fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+
+fu.get_structure()
 
 def get_reviews_reviewers_relation(memberId_list):
 	"""
@@ -92,15 +96,12 @@ def get_2_grams(words=""):
 	return Set(words_list_2)
 
 def get_js_list(content_list):
-	# content_list = get_reviews_content(reviews_array)
-	content_2_grams = []
-	for content in content_list:
-		content_2_grams.append(get_2_grams(words=content))
-	reviews_len = len(content_list)
+	content_list_2_grams = [get_2_grams(content) for content in content_list]
+	reviews_len = len(content_list_2_grams)
 	jd_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
-			jd_list.append(jaccard_distence(content_2_grams[i], content_2_grams[j]))
+			jd_list.append(jaccard_distence(content_list_2_grams[i], content_list_2_grams[j]))
 
 	return jd_list
 
@@ -130,21 +131,15 @@ def get_reviews_similarity_relation(jd_list):
 		elif jd ==1:
 			rs_relation_dict['1'] += 1		
 	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
-	print rs_relation_dict
 	return rs_relation_dict
 
 # rs_relation_dict = get_reviews_similarity_relation(get_js_list(reviews_array))
 # plot_relation(rs_relation_dict, use_log=False, plot_type='b-', xlabel='Similarity Score', ylabel='Num Pairs')
 
-# print get_reviews_rating_relation(reviews_array)
-# print get_reviews_feedbacks_relation(reviews_array)
-# print get_reviews_products_relation(reviews_array)
-# get_reviews_reviewers_relation(reviews_array)
+# save_graph(get_reviews_reviewers_relation(fu.get_memberId_list()), 'reviews_reviewers.png')
+# save_graph(get_reviews_products_relation(fu.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
+# save_graph(get_reviews_feedbacks_relation(fu.get_feedback_list()), 'reviews_feedbacks.png', xlabel='Num Reviews', ylabel='Num Feedbacks')
+# save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
+# save_graph(get_reviews_similarity_relation(get_js_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
-# save_graph(get_reviews_reviewers_relation(FU.get_memberId_list()), 'reviews_reviewers.png')
-# save_graph(get_reviews_products_relation(FU.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
-# save_graph(get_reviews_feedbacks_relation(FU.get_feedback_list()), 'reviews_feedbacks.png', xlabel='Num Reviews', ylabel='Num Feedbacks')
-# save_graph(get_reviews_rating_relation(FU.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
-
-save_graph(get_reviews_similarity_relation(get_js_list(FU.get_content_list()[0:500])), 'review_similarity.png', use_log=[False, True], plot_type='bo')
-FU.close()
+fu.close()

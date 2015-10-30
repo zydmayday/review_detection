@@ -2,9 +2,13 @@
 
 class FileUtil:
 
-	def __init__(self, file_name, open_type='r', **attrs):
-		self.fp = open(file_name, open_type)
+	def __init__(self, file_name='', open_type='r', **attrs):
+		if file_name:
+			self.fp = open(file_name, open_type)
 		self.structure = []
+
+	def open_file(self, file_name, open_type='r'):
+		self.fp = open(file_name, open_type)
 
 	def get_file_line(self):
 		"""
@@ -18,10 +22,6 @@ class FileUtil:
 
 		return non_blank_count
 
-
-	def write_to_file(self, filename, content):
-		self.fp.write(content)
-
 	def close(self):
 		self.fp.close()
 
@@ -31,6 +31,7 @@ class FileUtil:
 		和下面一个方法不同的是，这个直接把数组二维化
 		"""
 		self.structure = [line.split(split_type) for line in self.fp]
+		return self.structure
 
 	def get_line_list(self):
 		"""
