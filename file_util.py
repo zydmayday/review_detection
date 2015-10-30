@@ -79,5 +79,3 @@ class FileUtil:
 		获取所有的review的内容
 		"""
 		return self.get_column_list(columns=[-1])
-
-FU = FileUtil('../AmazonDataBackup/reviewsNew/reviews_test.mP')
