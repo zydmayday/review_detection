@@ -1,3 +1,4 @@
+# coding:utf-8
 import numpy as np
 import operator
 import matplotlib.pyplot as plt
@@ -5,129 +6,75 @@ import collections
 from sets import Set
 from collections import Counter
 import re
+import file_util
 
+FU = file_util.FileUtil('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+FU.get_structure()
 
-def get_reviews_array(file_name):
-	reviews_array = []
-	with open(file_name) as fp:
-		for line in fp:
-			reviews_array.append(line.split('\t'))
-	return reviews_array
+def get_reviews_reviewers_relation(memberId_list):
+	"""
+	获取用户和其所发的review之间的关系
+	并且统计，每个发送数量下的用户的数量
+	例如，用户A，B，C发送了10条，最后统计出来的是发送10条的用户为3
+	"""
+	c = Counter(e for e in memberId_list)
+	d = Counter(c.values())
+	return d
 
-reviews_array = get_reviews_array('./reviewsNew/reviewsNew.mP')
-# reviews_array = get_reviews_array('reviewsNew.txt')
-# reviews_array = get_reviews_array('./reviewsNew/reviews_test.mP')
+def get_reviews_products_relation(productId_list):
+	"""
+	获取产品数和review数量之间的关系
+	"""
+	c = Counter(e for e in productId_list)
+	d = Counter(c.values())
+	return d
 
-def get_column_array(reviews_array, column=[0]):
-	return_array = []
-	for review in reviews_array:
-		one_review = []
-		for col in column:
-			one_review.append(review[col])
-		if len(one_review) == 1:
-			return_array.append(one_review[0])
-		else:
-			return_array.append(one_review)
-	return return_array
-
-def get_reviews_content(reviews_array):
-	return get_column_array(reviews_array, column=[-1])
-
-def get_reviews_reviewers_relation(reviews_array):
-	reviewers_array = get_column_array(reviews_array, column=[0])
-	# for reviews in reviews_array:
-	# 	reviewers_array.append(reviews[0])
-
-	# count every reviewers' reviews number 
-	c = Counter(e for e in reviewers_array)
-
-	reviews_reviewers_dict = {}
-	for x in c:
-		num = c[x] 
-		if not reviews_reviewers_dict.get(num):
-			reviews_reviewers_dict[num] = 1
-		else:
-			reviews_reviewers_dict[num] += 1
-	# count occurency of every reviews level
-	return reviews_reviewers_dict
-
-def get_reviews_products_relation(reviews_array):
-	products_array = get_column_array(reviews_array, column=[1])
-	# for reviews in reviews_array:
-	# 	products_array.append(reviews[1])
-
-	# count every products' reviews number 
-	c = Counter(e for e in products_array)
-
-	reviews_products_dict = {}
-	for x in c:
-		num = c[x] 
-		if not reviews_products_dict.get(num):
-			reviews_products_dict[num] = 1
-		else:
-			reviews_products_dict[num] += 1
-	# count occurency of every reviews level
-	return reviews_products_dict
-
-def get_reviews_feedbacks_relation(reviews_array):
-	feedbacks_array = []
-	for reviews in reviews_array:
-		if len(reviews):
-			feedbacks_array.append(int(reviews[3]))
-
-	# count every feedbacks' reviews number 
-	c = Counter(e for e in feedbacks_array)
-	# count occurency of every reviews level
+def get_reviews_feedbacks_relation(feedback_list):
+	"""
+	获取review和feedback之间的关系
+	为了方便作图，这里进行了排序
+	"""
+	feedback_list = [float(feedback) for feedback in feedback_list]
+	c = Counter(e for e in feedback_list)
+	for key in c.keys():
+		key = float(key)
 	c = collections.OrderedDict(sorted(c.items()))
 	return c
 
-def get_reviews_rating_relation(reviews_array):
-	rating_array = []
-	for reviews in reviews_array:
-		if len(reviews):
-			rating_array.append(reviews[5])
-
-	# count every rating' reviews number 
-	c = Counter(e for e in rating_array)
-	# count occurency of every reviews level
+def get_reviews_rating_relation(rating_list):
+	"""
+	获取review和rating之间的关系
+	为了方便作图，这里进行了排序
+	同时，这里对Y轴的数值进行了调整
+	"""
+	c = Counter(e for e in rating_list)
 	c = collections.OrderedDict(sorted(c.items()))
+	values = c.values()
+	values = [float(value) for value in values]
+	sum_rating_num = sum(values)
+	for value in c.values():
+		value = value / sum_rating_num
 	return c
 
-def plot_relation(dict, xlabel='Num Reviews', ylabel='Num Members', use_log=True, plot_type='rx'):
-	relation_x = []
-	relation_y = []
-	for i in dict.iterkeys():
-		relation_x.append(float(i))
-		relation_y.append(float(dict[i]))
+def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], plot_type='rx'):
+	"""
+	作图
+	给定的x_list和y_list作图，并根据一定的参数进行修饰
+	"""
+
+	x_list = dict.keys()
+	y_list = dict.values()
 
 	fig, ax =  plt.subplots()
-	if use_log:
+	if use_log[0]:
 		ax.set_xscale('log', basex=10)
+	if use_log[1]:
 		ax.set_yscale('log', basey=10)
-	plt.plot(relation_x, relation_y, plot_type)
+	plt.plot(x_list, y_list, plot_type)
 	plt.ylabel(ylabel)
 	plt.xlabel(xlabel)
-	plt.axis([0, float(max(relation_x))*1.1, 0, float(max(relation_y))*1.1])
-	plt.show()
-
-def plot_percent(dict, xlabel='Rating', ylabel='Percent of Reviews'):
-	relation_x = []
-	relation_y = []
-	for k, v in dict.iteritems():
-		relation_x.append(k)
-		relation_y.append(v)
-	y_sum = sum(relation_y)
-	for index, y in enumerate(relation_y):
-		relation_y[index] = float(y) / y_sum
-	fig, ax =  plt.subplots()
-	# ax.set_xscale('log', basex=10)
-	# ax.set_yscale('log', basey=10)
-	plt.plot(relation_x, relation_y, 'r-')
-	plt.ylabel(ylabel)
-	plt.xlabel(xlabel)
-	plt.axis([0, float(max(relation_x))*1.1, 0, float(max(relation_y))*1.1])
-	plt.show()
-
+	plt.axis([0, float(max(x_list))*1.2, 0, float(max(y_list))*1.2])
+	plt.savefig(saveFilename)
 
 def jaccard_distence(word1_set, words2_set):
 	set_or = word1_set | words2_set
@@ -144,12 +91,12 @@ def get_2_grams(words=""):
 			words_list_2.append(words_list[idx] + ' ' + words_list[idx + 1])
 	return Set(words_list_2)
 
-def get_js_list(reviews_array):
-	reviews_content_list = get_reviews_content(reviews_array)
+def get_js_list(content_list):
+	# content_list = get_reviews_content(reviews_array)
 	content_2_grams = []
-	for content in reviews_content_list:
+	for content in content_list:
 		content_2_grams.append(get_2_grams(words=content))
-	reviews_len = len(reviews_content_list)
+	reviews_len = len(content_list)
 	jd_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
@@ -182,7 +129,8 @@ def get_reviews_similarity_relation(jd_list):
 			rs_relation_dict['0.9'] += 1
 		elif jd ==1:
 			rs_relation_dict['1'] += 1		
-
+	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
+	print rs_relation_dict
 	return rs_relation_dict
 
 # rs_relation_dict = get_reviews_similarity_relation(get_js_list(reviews_array))
@@ -193,8 +141,10 @@ def get_reviews_similarity_relation(jd_list):
 # print get_reviews_products_relation(reviews_array)
 # get_reviews_reviewers_relation(reviews_array)
 
-# plot_relation(get_reviews_reviewers_relation(reviews_array))
-# plot_relation(get_reviews_products_relation(reviews_array), xlabel='Num Reviews', ylabel='Num Products')
-plot_relation(get_reviews_feedbacks_relation(reviews_array), xlabel='Num Reviews', ylabel='Num Feedbacks')
-# plot_percent(get_reviews_rating_relation(reviews_array))
+# save_graph(get_reviews_reviewers_relation(FU.get_memberId_list()), 'reviews_reviewers.png')
+# save_graph(get_reviews_products_relation(FU.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
+# save_graph(get_reviews_feedbacks_relation(FU.get_feedback_list()), 'reviews_feedbacks.png', xlabel='Num Reviews', ylabel='Num Feedbacks')
+# save_graph(get_reviews_rating_relation(FU.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
 
+save_graph(get_reviews_similarity_relation(get_js_list(FU.get_content_list()[0:500])), 'review_similarity.png', use_log=[False, True], plot_type='bo')
+FU.close()
