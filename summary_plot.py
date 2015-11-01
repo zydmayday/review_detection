@@ -8,12 +8,8 @@ from collections import Counter
 import re
 import file_util
 import ast
+import time
 
-fu = file_util.FileUtil()
-
-fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
-
-fu.get_structure()
 
 def get_reviews_reviewers_relation(memberId_list):
 	"""
@@ -80,12 +76,18 @@ def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', u
 	plt.axis([0, float(max(x_list))*1.2, 0, float(max(y_list))*1.2])
 	plt.savefig(saveFilename)
 
-def jaccard_distence(word1_set, words2_set):
+def jaccard_distance(word1_set, words2_set):
+	"""
+	计算Jaccard distance
+	"""
 	set_or = word1_set | words2_set
 	set_and = word1_set & words2_set
 	return float(len(set_and)) / len(set_or)
 
 def get_2_grams(words=""):
+	"""
+	给定一个文本，将其分割成2-grams的格式
+	"""
 	words_list = re.findall(r"[\w']+", words)
 	# words_list_2 = [words_list[idx] + ' ' + words_list[idx+1] for idx, word in words_list]
 	words_list_2 = []
@@ -95,17 +97,25 @@ def get_2_grams(words=""):
 			words_list_2.append(words_list[idx] + ' ' + words_list[idx + 1])
 	return Set(words_list_2)
 
-def get_js_list(content_list):
-	content_list_2_grams = [get_2_grams(content) for content in content_list]
+def get_2_grams_list(content_list):
+	return [get_2_grams(content) for content in content_list]
+
+def get_js_list(content_list_2_grams):
+	"""
+	对于分割成2-grams格式的文本，计算两两之间的jaccard distance
+	"""
 	reviews_len = len(content_list_2_grams)
 	jd_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
-			jd_list.append(jaccard_distence(content_list_2_grams[i], content_list_2_grams[j]))
+			jd_list.append(jaccard_distance(content_list_2_grams[i], content_list_2_grams[j]))
 
 	return jd_list
 
 def get_reviews_similarity_relation(jd_list):
+	"""
+	判断每个similarity区间内的数量
+	"""
 	rs_relation_dict = {'0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1':0}
 	for jd in jd_list:
 		if jd >= 0 and jd < 0.1:
@@ -133,6 +143,7 @@ def get_reviews_similarity_relation(jd_list):
 	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
 	return rs_relation_dict
 
+
 # rs_relation_dict = get_reviews_similarity_relation(get_js_list(reviews_array))
 # plot_relation(rs_relation_dict, use_log=False, plot_type='b-', xlabel='Similarity Score', ylabel='Num Pairs')
 
@@ -142,4 +153,26 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
 # save_graph(get_reviews_similarity_relation(get_js_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
-fu.close()
+
+start = time.time()
+fu = file_util.FileUtil()
+
+fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+
+fu.get_structure()
+print 'finish get_structure() %s' % (time.time() - start)
+start =time.time()
+content_list = fu.get_content_list()[0:50]
+print 'finish get content_list() %s' % (time.time() - start)
+start = time.time()
+content_list_2_grams = get_2_grams_list(content_list)
+print 'finish get get_2_grams_list() %s' % (time.time() - start)
+start = time.time()
+jd_list = get_js_list(content_list_2_grams)
+print 'finish get get_js_list() %s' % (time.time() - start)
+start = time.time()
+get_reviews_similarity_relation(jd_list)
+print 'finish get get_reviews_similarity_relation() %s' % (time.time() - start)
+
+
+# fu.close()
