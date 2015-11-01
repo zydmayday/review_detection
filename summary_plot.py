@@ -154,25 +154,25 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_js_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 
-start = time.time()
-fu = file_util.FileUtil()
+# start = time.time()
+# fu = file_util.FileUtil()
 
-fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+# fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
 
-fu.get_structure()
-print 'finish get_structure() %s' % (time.time() - start)
-start =time.time()
-content_list = fu.get_content_list()[0:50]
-print 'finish get content_list() %s' % (time.time() - start)
-start = time.time()
-content_list_2_grams = get_2_grams_list(content_list)
-print 'finish get get_2_grams_list() %s' % (time.time() - start)
-start = time.time()
-jd_list = get_js_list(content_list_2_grams)
-print 'finish get get_js_list() %s' % (time.time() - start)
-start = time.time()
-get_reviews_similarity_relation(jd_list)
-print 'finish get get_reviews_similarity_relation() %s' % (time.time() - start)
+# fu.get_structure()
+# print 'finish get_structure() %s' % (time.time() - start)
+# # start =time.time()
+# content_list = fu.get_content_list()[0:500]
+# print 'finish get content_list() %s' % (time.time() - start)
+# # start = time.time()
+# content_list_2_grams = get_2_grams_list(content_list)
+# print 'finish get get_2_grams_list() %s' % (time.time() - start)
+# # start = time.time()
+# jd_list = get_js_list(content_list_2_grams)
+# print 'finish get get_js_list() %s' % (time.time() - start)
+# # start = time.time(1)
+# get_reviews_similarity_relation(jd_list)
+# print 'finish get get_reviews_similarity_relation() %s' % (time.time() - start)
 
 
 # fu.close()

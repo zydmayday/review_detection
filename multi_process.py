@@ -1,8 +1,9 @@
 from multiprocessing import Pool, Process, Lock, Queue, cpu_count
 import summary_plot
 import file_util
+import time
 
-def write_distance_to file(q, l, name):
+def write_distance_to_file(q, l, name):
 	print 'starting process %s' % name
 	dis_list = []
 	while True:
@@ -17,13 +18,9 @@ def write_distance_to file(q, l, name):
 					l.release()
 					continue
 		else:
-			grams_list = []
-			for x in xrange(1,10000):
-				grams_list.append(q.get())
-				if q.empty():
-					break
+			grams_pair_list = q.get()
 			l.release()
-			for grams in grams_list:
+			for grams in grams_pair_list:
 				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
 				dis_list.append(jaccard_distance)
 		# time.sleep(1)
@@ -33,6 +30,7 @@ def write_distance_to file(q, l, name):
 
 
 if __name__ == '__main__':
+	start = time.time()
 	fu = file_util.FileUtil()
 
 	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
@@ -49,15 +47,27 @@ if __name__ == '__main__':
 	process_list = []
 	cpu_count = cpu_count()
 	for i in range(0,cpu_count):
-		p = Process(target=write_distance_to file, args=(q, l, i))
+		p = Process(target=write_distance_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
+
+	count = 0
+	grams_pair_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
-			q.put([content_list_2_grams[i], content_list_2_grams[j]])
+			if count == 50000:
+				q.put(grams_pair_list)
+				count = 0
+				grams_pair_list = []
+			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
+			grams_pair_list.append(grams_pair)
+			count += 1
+	q.put(grams_pair_list)
+			
+
 	with open('global_value.py', 'w') as fp:
 		fp.write('True')
 	for p in process_list:
 		p.join()	
-	print 'exit main'
+	print 'exit main with %s s' % (time.time() - start)
