@@ -162,13 +162,14 @@ def get_reviews_similarity_relation(jd_list):
 # fu.get_structure()
 # print 'finish get_structure() %s' % (time.time() - start)
 # # start =time.time()
-# content_list = fu.get_content_list()[0:500]
+# content_list = fu.get_content_list()[0:1000]
 # print 'finish get content_list() %s' % (time.time() - start)
 # # start = time.time()
 # content_list_2_grams = get_2_grams_list(content_list)
 # print 'finish get get_2_grams_list() %s' % (time.time() - start)
 # # start = time.time()
 # jd_list = get_js_list(content_list_2_grams)
+# print len(jd_list)
 # print 'finish get get_js_list() %s' % (time.time() - start)
 # # start = time.time(1)
 # get_reviews_similarity_relation(jd_list)
