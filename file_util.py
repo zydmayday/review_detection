@@ -80,3 +80,23 @@ class FileUtil:
 		获取所有的review的内容
 		"""
 		return self.get_column_list(columns=[-1])
+
+	def get_reviewer_content_dict(self):
+		reviewer_content_dict = {}
+		self.structure = self.structure[0:40000]
+		for line in self.structure:
+			reviewer = line[0]
+			if not reviewer in reviewer_content_dict.keys():
+				reviewer_content_dict[reviewer] = []
+			reviewer_content_dict[reviewer].append(line[-1])
+		# to_pop_reviewers = []
+		# for reviewer, contents in reviewer_content_dict.iteritems():
+		# 	if len(contents) == 1:
+		# 		to_pop_reviewers.append(reviewer)
+		# for reviewer in to_pop_reviewers:
+		# 	reviewer_content_dict.pop(reviewer, None)
+		return reviewer_content_dict
+
+# fu = FileUtil('../AmazonDataBackup/reviewsNew/reviews_test.mP')
+# fu.get_structure()
+# print fu.get_reviewer_review_dict().keys()
