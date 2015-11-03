@@ -142,7 +142,7 @@ def draw_reviewer_similarity_multiprocess():
 	l = Lock()
 	start = time.time()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
 	fu.get_structure()
 	print 'finish get_structure() with %s s' % (time.time() - start)
 	# reviewer_content_dict = fu.get_reviewer_content_dict()
@@ -160,10 +160,10 @@ def draw_reviewer_similarity_multiprocess():
 
 	count = 0
 	reviewer_content_dict = {}
-	for line in fu.structure[0:1000000]:
+	for line in fu.structure:
 		reviewer = line[0]
 		if not reviewer in reviewer_content_dict.keys():
-			if count % 6000 == 0:
+			if count % 5000 == 0:
 				q.put(reviewer_content_dict)
 				reviewer_content_dict = {}
 			reviewer_content_dict[reviewer] = []
@@ -189,7 +189,9 @@ def draw_reviewer_similarity_multiprocess():
 					print len(sub_list)
 					reviewer_similarity_list += sub_list
 	print len(reviewer_similarity_list)
-	summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list),'reviewer_similarity.png', xlabel='Maxinum Similarity Score', ylabel='Number of Reviewers', use_log=[False, True], plot_type='bo-')
+	with open("reviewer_similarity_relation_all", "w") as fp:
+		fp.write(str(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list)))
+	# summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list),'reviewer_similarity.png', xlabel='Maxinum Similarity Score', ylabel='Number of Reviewers', use_log=[False, True], plot_type='bo-')
 
 
 if __name__ == '__main__':

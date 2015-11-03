@@ -83,7 +83,7 @@ class FileUtil:
 
 	def get_reviewer_content_dict(self):
 		reviewer_content_dict = {}
-		self.structure = self.structure[0:40000]
+		self.structure = self.structure[0:10000]
 		for line in self.structure:
 			reviewer = line[0]
 			if not reviewer in reviewer_content_dict.keys():
@@ -96,7 +96,8 @@ class FileUtil:
 		# for reviewer in to_pop_reviewers:
 		# 	reviewer_content_dict.pop(reviewer, None)
 		return reviewer_content_dict
-
-# fu = FileUtil('../AmazonDataBackup/reviewsNew/reviews_test.mP')
-# fu.get_structure()
-# print fu.get_reviewer_review_dict().keys()
+		
+if __name__ == '__main__':
+	fu = FileUtil('../AmazonDataBackup/reviewsNew.txt')
+	fu.get_structure()
+	print fu.get_file_line()

@@ -1,5 +1,4 @@
 # coding:utf-8
-import numpy as np
 import operator
 import matplotlib.pyplot as plt
 import collections
@@ -60,7 +59,9 @@ def get_reviewer_similarity(reviewer_content_dict):
 	similarity_list = []
 	for reviewer, contents in reviewer_content_dict.iteritems():
 		if len(contents) > 1:
-			similarity_list.append(max(get_jd_list(get_2_grams_list(contents))))
+			jd_list = get_jd_list(get_2_grams_list(contents))
+			if len(jd_list) != 0:
+				similarity_list.append(max(jd_list))
 	return similarity_list
 
 def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], plot_type='rx'):
@@ -89,6 +90,8 @@ def jaccard_distance(word1_set, words2_set):
 	"""
 	set_or = word1_set | words2_set
 	set_and = word1_set & words2_set
+	if len(set_or) == 0:
+		return 2
 	return float(len(set_and)) / len(set_or)
 
 def get_2_grams(words=""):
@@ -115,7 +118,9 @@ def get_jd_list(content_list_2_grams):
 	jd_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
-			jd_list.append(jaccard_distance(content_list_2_grams[i], content_list_2_grams[j]))
+			jd = jaccard_distance(content_list_2_grams[i], content_list_2_grams[j])
+			if jd <= 1:
+				jd_list.append(jd)
 
 	return jd_list
 
@@ -154,18 +159,22 @@ def get_reviews_similarity_relation(jd_list):
 # rs_relation_dict = get_reviews_similarity_relation(get_jd_list(reviews_array))
 # plot_relation(rs_relation_dict, use_log=False, plot_type='b-', xlabel='Similarity Score', ylabel='Num Pairs')
 
-# save_graph(get_reviews_reviewers_relation(fu.get_memberId_list()), 'reviews_reviewers.png')
-# save_graph(get_reviews_products_relation(fu.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
 # save_graph(get_reviews_feedbacks_relation(fu.get_feedback_list()), 'reviews_feedbacks.png', xlabel='Num Reviews', ylabel='Num Feedbacks')
 # save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	start = time.time()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
 	fu.get_structure()
-	print 'finish get_structure() %s' % (time.time() - start)
+	save_graph(get_reviews_products_relation(fu.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
+	# save_graph(get_reviews_reviewers_relation(fu.get_memberId_list()), 'reviews_reviewers.png')
+	# with open("reviewer_similarity_relation_1") as fp:
+	# 	line = fp.readline()
+	# 	save_graph(collections.OrderedDict(sorted(ast.literal_eval(line).items())), 'reviewer_similarity_relation_1.png', use_log=[False, True], plot_type='ro-')
+
+	# start = time.time()
+	# print 'finish get_structure() %s' % (time.time() - start)
 	# # start =time.time()
 	# content_list = fu.get_content_list()[0:1000]
 	# print 'finish get content_list() %s' % (time.time() - start)
@@ -179,10 +188,13 @@ if __name__ == '__main__':
 	# # start = time.time(1)
 	# get_reviews_similarity_relation(jd_list)
 	# print 'finish get get_reviews_similarity_relation() %s' % (time.time() - start)
-	reviewer_content_dict = fu.get_reviewer_content_dict()
-	print 'finish get_reviewer_content_dict() %s' % (time.time() - start)
-	reviewer_similarity_list = get_reviewer_similarity(reviewer_content_dict)
-	print 'finish get_reviewer_similarity() %s' % (time.time() - start)
-	save_graph(get_reviews_similarity_relation(reviewer_similarity_list), 'reviewer_similarity.png', use_log=[False, True], plot_type='bo-')
+	# reviewer_content_dict = fu.get_reviewer_content_dict()
+	# print 'finish get_reviewer_content_dict() %s' % (time.time() - start)
+	# reviewer_similarity_list = get_reviewer_similarity(reviewer_content_dict)
+	# print 'finish get_reviewer_similarity() %s' % (time.time() - start)
+	# reviewer_similarity_relation = get_reviews_similarity_relation(reviewer_similarity_list)
+	# with open("reviewer_similarity_relation", "w") as fp:
+	# 	fp.write(str(reviewer_similarity_relation))
+	# save_graph(get_reviews_similarity_relation(reviewer_similarity_list), 'reviewer_similarity.png', use_log=[False, True], plot_type='bo-')
 
 	# fu.close()
