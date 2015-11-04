@@ -82,21 +82,20 @@ def write_reviewer_similarity_to_file(q, l, name):
 	with open('./reviewer_similarity/rs.' + str(name), 'w') as fp:
 		fp.write(str(similarity_list))
 
-def draw_review_distance_multiprocess():
+def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
-	start = time.time()
 	fu = file_util.FileUtil()
 	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
-
 	fu.get_structure()
 
-	content_list = fu.get_content_list()[0:100]
+	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
 	l.acquire()
 	with open('global_value.py', 'w') as fp:
 		fp.write('False')
 	l.release()
+	start = time.time()
 	process_list = []
 	for i in range(0,cpu_count()):
 		p = Process(target=write_review_distance_to_file, args=(q, l, i))
@@ -108,7 +107,7 @@ def draw_review_distance_multiprocess():
 	grams_pair_list = []
 	for i in range(0, reviews_len):
 		for j in range(i + 1, reviews_len):
-			if count % 50000 == 0:
+			if count % put_num == 0:
 				q.put(grams_pair_list)
 				grams_pair_list = []
 			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
@@ -116,26 +115,28 @@ def draw_review_distance_multiprocess():
 			count += 1
 	q.put(grams_pair_list)
 	print 'finish puting with %s s' % (time.time() - start)
-	print count
 	l.acquire()
 	with open('global_value.py', 'w') as fp:
 		fp.write('True')
 	l.release()
 	# print 'start join process'
 	for p in process_list:
-		p.join()	
-	print 'exit main with %s s' % (time.time() - start)
+		p.join()
+	finish_time = time.time() - start
+	print 'exit main with %s s' % finish_time	
+	return finish_time
 
+def draw_graph(dirname):
 	jd_list = []
-	for (dirpath, dirnames, filenames) in walk('jaccard_distance'):
+	for (dirpath, dirnames, filenames) in walk(dirname):
 		for filename in filenames:
 			if not filename.startswith('.'):
 				print filename
-				with open('jaccard_distance/' + filename) as fp:
+				with open(dirname + '/' + filename) as fp:
 					sub_list = ast.literal_eval(fp.read())
-					print len(sub_list)
 					jd_list += sub_list
-	summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(jd_list), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
+	summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(jd_list), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='bo-')
+
 
 def draw_reviewer_similarity_multiprocess():
 	q = Queue()
@@ -177,7 +178,9 @@ def draw_reviewer_similarity_multiprocess():
 	l.release()
 	for p in process_list:
 		p.join()
-	print 'exit main with %s s' % (time.time() - start)
+	finish_time = time.time() - start
+	print 'exit main with %s s' % finish_time
+	# return finish_time
 
 	reviewer_similarity_list = []
 	for (dirpath, dirnames, filenames) in walk('reviewer_similarity'):
@@ -193,7 +196,11 @@ def draw_reviewer_similarity_multiprocess():
 		fp.write(str(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list)))
 	# summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list),'reviewer_similarity.png', xlabel='Maxinum Similarity Score', ylabel='Number of Reviewers', use_log=[False, True], plot_type='bo-')
 
-
 if __name__ == '__main__':
-	# draw_review_distance_multiprocess()
-	draw_reviewer_similarity_multiprocess()
+	time_dict = {10000:0, 50000:0}
+	# for put_num in [100,500,1000,5000,10000,20000,50000]:
+	for put_num in time_dict.keys():
+		finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
+		time_dict[put_num] = finish_time
+	print time_dict
+	# draw_reviewer_similarity_multiprocess()
