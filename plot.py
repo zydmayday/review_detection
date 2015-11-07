@@ -37,7 +37,6 @@ class Plot:
 			finish_time = draw_review_distance_multiprocess(list_num=data_num, put_num=put_num)
 			test_dict[put_num] = finish_time
 		test_dict = collections.OrderedDict(sorted(test_dict.items()))
-		print test_dict
 		self.save_graph(test_dict, 'graphs/multi_process1.png', xlabel='Queue Put Number', ylabel='Cost Time', use_log=[False, False], plot_type='ro-')
 
 	def singleprocess_datanum(self, test_dict):
@@ -80,9 +79,8 @@ class Plot:
 		multi_y_list = multi_dict.values()
 		plt.ylabel('Cost Time')
 		plt.xlabel('Total Data Num')		
-		line1, line2 = plt.plot(single_x_list, single_y_list, 'bx-', multi_x_list, multi_y_list, 'ro-')
-		plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-           ncol=2, mode="expand", borderaxespad=0.)
+		line_single, line_multi = plt.plot(single_x_list, single_y_list, 'bx-', multi_x_list, multi_y_list, 'ro-')
+		plt.legend([line_single, line_multi], ['Single', 'Multi'])
 		plt.savefig('graphs/single_multi.png')
 
 if __name__ == '__main__':

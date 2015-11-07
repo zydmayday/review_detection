@@ -8,6 +8,7 @@ import re
 import file_util
 import ast
 import time
+import math
 
 
 def get_reviews_reviewers_relation(memberId_list):
@@ -128,30 +129,10 @@ def get_reviews_similarity_relation(jd_list):
 	"""
 	判断每个similarity区间内的数量
 	"""
-	rs_relation_dict = {'0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1':0}
+	rs_relation_dict = {'0.0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1.0':0}
 	for jd in jd_list:
-		if jd >= 0 and jd < 0.1:
-			rs_relation_dict['0'] += 1
-		elif jd >= 0.1 and jd < 0.2:
-			rs_relation_dict['0.1'] += 1
-		elif jd >= 0.2 and jd < 0.3:
-			rs_relation_dict['0.2'] += 1
-		elif jd >= 0.3 and jd < 0.4:
-			rs_relation_dict['0.3'] += 1
-		elif jd >= 0.4 and jd < 0.5:
-			rs_relation_dict['0.4'] += 1
-		elif jd >= 0.5 and jd < 0.6:
-			rs_relation_dict['0.5'] += 1
-		elif jd >= 0.6 and jd < 0.7:
-			rs_relation_dict['0.6'] += 1
-		elif jd >= 0.7 and jd < 0.8:
-			rs_relation_dict['0.7'] += 1
-		elif jd >= 0.8 and jd < 0.9:
-			rs_relation_dict['0.8'] += 1
-		elif jd >= 0.9 and jd < 1:
-			rs_relation_dict['0.9'] += 1
-		elif jd ==1:
-			rs_relation_dict['1'] += 1		
+		key = str(math.floor(jd / 0.1) / 10)
+		rs_relation_dict[key] += 1
 	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
 	return rs_relation_dict
 
@@ -164,10 +145,14 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
-	fu.get_structure()
-	save_graph(get_reviews_products_relation(fu.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
+	# print str(math.floor(0.348473 / 0.1) / 10)
+	print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
+
+
+	# fu = file_util.FileUtil()
+	# fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	# fu.get_structure()
+	# save_graph(get_reviews_products_relation(fu.get_productId_list()), 'reviews_products.png', xlabel='Num Reviews', ylabel='Num Products')
 	# save_graph(get_reviews_reviewers_relation(fu.get_memberId_list()), 'reviews_reviewers.png')
 	# with open("reviewer_similarity_relation_1") as fp:
 	# 	line = fp.readline()

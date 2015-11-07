@@ -58,6 +58,8 @@ def write_review_distance_to_file(q, l, name):
 
 def write_reviewer_similarity_to_file(q, l, name):
 	print 'starting process %s' % name
+	if not path.exists('reviewer_similarity/'):
+		makedirs('reviewer_similarity')
 	similarity_list = []
 	while True:
 		l.acquire()
@@ -77,8 +79,7 @@ def write_reviewer_similarity_to_file(q, l, name):
 			similarity_list += summary_plot.get_reviewer_similarity(reviewer_content_dict)
 			# print 'process' , name,' have done ', str(len(similarity_list))
 	print 'writing to file', name
-	if not path.exists('reviewer_similarity/'):
-		makedirs('reviewer_similarity')
+	
 	with open('./reviewer_similarity/rs.' + str(name), 'w') as fp:
 		fp.write(str(similarity_list))
 
@@ -97,7 +98,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	l.release()
 	start = time.time()
 	process_list = []
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count()/2):
 		p = Process(target=write_review_distance_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
@@ -154,7 +155,7 @@ def draw_reviewer_similarity_multiprocess():
 	process_list = []
 	# producer = Process(target=producer, args=(q, l, 'producer', reviewer_content_dict))
 	# p.start()
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count() / 2):
 		p = Process(target=write_reviewer_similarity_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
@@ -164,9 +165,11 @@ def draw_reviewer_similarity_multiprocess():
 	for line in fu.structure:
 		reviewer = line[0]
 		if not reviewer in reviewer_content_dict.keys():
-			if count % 5000 == 0:
+			if count % 1000 == 0:
 				q.put(reviewer_content_dict)
 				reviewer_content_dict = {}
+			if count % 12000 == 0:
+				time.sleep(10)
 			reviewer_content_dict[reviewer] = []
 			count += 1
 		reviewer_content_dict[reviewer].append(line[-1])
@@ -197,10 +200,10 @@ def draw_reviewer_similarity_multiprocess():
 	# summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list),'reviewer_similarity.png', xlabel='Maxinum Similarity Score', ylabel='Number of Reviewers', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	time_dict = {10000:0, 50000:0}
+	# time_dict = {10000:0, 50000:0}
 	# for put_num in [100,500,1000,5000,10000,20000,50000]:
-	for put_num in time_dict.keys():
-		finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
-		time_dict[put_num] = finish_time
-	print time_dict
-	# draw_reviewer_similarity_multiprocess()
+	# for put_num in time_dict.keys():
+	# 	finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
+	# 	time_dict[put_num] = finish_time
+	# print time_dict
+	draw_reviewer_similarity_multiprocess()
