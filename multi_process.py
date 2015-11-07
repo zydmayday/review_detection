@@ -35,22 +35,22 @@ def write_review_distance_to_file(q, l, name):
 	while True:
 		l.acquire()
 		if q.empty():
-			with open('global_value.py') as fp:
-				if fp.read() == 'True':
-					print 'exit', name
-					l.release()
-					break
-				else:
-					l.release()
-					continue
+			l.release()
+			time.sleep(0.1)
+			continue
 		else:
 			grams_pair_list = q.get()
+			if grams_pair_list == 'STOP':
+				print 'process', name, ' exit'
+				l.release()
+				break
 			l.release()
+			# print 'process', name, 'have got ', len(grams_pair_list), 'reviews'
 			for grams in grams_pair_list:
 				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
 				dis_list.append(jaccard_distance)
 		# time.sleep(1)
-	print 'writing to file'
+	# print 'writing to file'
 	if not path.exists('jaccard_distance/'):
 		makedirs('jaccard_distance')
 	with open('./jaccard_distance/jd.' + str(name), 'w') as fp:
@@ -62,16 +62,15 @@ def write_reviewer_similarity_to_file(q, l, name):
 	while True:
 		l.acquire()
 		if q.empty():
-			with open('global_value.py') as fp:
-				if fp.read() == 'True':
-					print 'exit', name
-					l.release()
-					break
-				else:
-					l.release()
-					continue
+			l.release()
+			time.sleep(0.1)
+			continue
 		else:
 			reviewer_content_dict = q.get()
+			if reviewer_content_dict == 'STOP':
+				print 'process', name, ' exit'
+				l.release()
+				break
 			l.release()
 			print 'process', name, 'have got ', str(len(reviewer_content_dict.keys())), 'reviewers content'
 			similarity_list += summary_plot.get_reviewer_similarity(reviewer_content_dict)
@@ -86,23 +85,22 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew103.mP')
 	fu.get_structure()
-
 	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
-	l.acquire()
-	with open('global_value.py', 'w') as fp:
-		fp.write('False')
-	l.release()
+	# l.acquire()
+	# with open('global_value.py', 'w') as fp:
+	# 	fp.write('False')
+	# l.release()
 	start = time.time()
 	process_list = []
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count()/2):
 		p = Process(target=write_review_distance_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
-
+	print reviews_len
 	count = 0
 	grams_pair_list = []
 	for i in range(0, reviews_len):
@@ -114,11 +112,13 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 			grams_pair_list.append(grams_pair)
 			count += 1
 	q.put(grams_pair_list)
-	print 'finish puting with %s s' % (time.time() - start)
-	l.acquire()
-	with open('global_value.py', 'w') as fp:
-		fp.write('True')
-	l.release()
+	for i in range(0,cpu_count()/2):
+		q.put('STOP')
+	# print 'finish puting with %s s' % (time.time() - start)
+	# l.acquire()
+	# with open('global_value.py', 'w') as fp:
+	# 	fp.write('True')
+	# l.release()
 	# print 'start join process'
 	for p in process_list:
 		p.join()
@@ -135,6 +135,7 @@ def draw_graph(dirname):
 				with open(dirname + '/' + filename) as fp:
 					sub_list = ast.literal_eval(fp.read())
 					jd_list += sub_list
+	print len(jd_list)
 	summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(jd_list), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='bo-')
 
 
@@ -154,7 +155,7 @@ def draw_reviewer_similarity_multiprocess():
 	process_list = []
 	# producer = Process(target=producer, args=(q, l, 'producer', reviewer_content_dict))
 	# p.start()
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count()/2):
 		p = Process(target=write_reviewer_similarity_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
@@ -171,6 +172,8 @@ def draw_reviewer_similarity_multiprocess():
 			count += 1
 		reviewer_content_dict[reviewer].append(line[-1])
 	q.put(reviewer_content_dict)
+	for i in range(0,cpu_count()/2):
+		q.put('STOP')
 	print 'finish puting with %s s' % (time.time() - start)
 	l.acquire()
 	with open('global_value.py', 'w') as fp:
@@ -203,4 +206,5 @@ if __name__ == '__main__':
 	# 	finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
-	draw_reviewer_similarity_multiprocess()
+	# draw_graph('jaccard_distance')
+	draw_review_distance_multiprocess(list_num=2000, put_num=128)

@@ -65,7 +65,7 @@ def get_reviewer_similarity(reviewer_content_dict):
 				similarity_list.append(max(jd_list))
 	return similarity_list
 
-def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], plot_type='rx'):
+def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], log_base=[10, 10], plot_type='rx', title=''):
 	"""
 	作图
 	给定的x_list和y_list作图，并根据一定的参数进行修饰
@@ -76,12 +76,13 @@ def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', u
 
 	fig, ax =  plt.subplots()
 	if use_log[0]:
-		ax.set_xscale('log', basex=10)
+		ax.set_xscale('log', basex=log_base[0])
 	if use_log[1]:
-		ax.set_yscale('log', basey=10)
+		ax.set_yscale('log', basey=log_base[1])
 	plt.plot(x_list, y_list, plot_type)
 	plt.ylabel(ylabel)
 	plt.xlabel(xlabel)
+	plt.title(title)
 	plt.axis([0, float(max(x_list))*1.2, 0, float(max(y_list))*1.2])
 	plt.savefig(saveFilename)
 
@@ -141,12 +142,15 @@ def get_reviews_similarity_relation(jd_list):
 # plot_relation(rs_relation_dict, use_log=False, plot_type='b-', xlabel='Similarity Score', ylabel='Num Pairs')
 
 # save_graph(get_reviews_feedbacks_relation(fu.get_feedback_list()), 'reviews_feedbacks.png', xlabel='Num Reviews', ylabel='Num Feedbacks')
-# save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'reviews_rating.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating')
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
+	fu = file_util.FileUtil()
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	fu.get_structure()
+	save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'graphs/reviews_rating_all.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating', title='Rating v/s Percent of Reviews')
 	# print str(math.floor(0.348473 / 0.1) / 10)
-	print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
+	# print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
 
 
 	# fu = file_util.FileUtil()
