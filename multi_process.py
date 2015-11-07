@@ -185,18 +185,18 @@ def draw_reviewer_similarity_multiprocess():
 	print 'exit main with %s s' % finish_time
 	# return finish_time
 
-	reviewer_similarity_list = []
-	for (dirpath, dirnames, filenames) in walk('reviewer_similarity'):
-		for filename in filenames:
-			if not filename.startswith('.'):
-				print filename
-				with open('reviewer_similarity/' + filename) as fp:
-					sub_list = ast.literal_eval(fp.read())
-					print len(sub_list)
-					reviewer_similarity_list += sub_list
-	print len(reviewer_similarity_list)
-	with open("reviewer_similarity_relation_all", "w") as fp:
-		fp.write(str(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list)))
+	# reviewer_similarity_list = []
+	# for (dirpath, dirnames, filenames) in walk('reviewer_similarity'):
+	# 	for filename in filenames:
+	# 		if not filename.startswith('.'):
+	# 			print filename
+	# 			with open('reviewer_similarity/' + filename) as fp:
+	# 				sub_list = ast.literal_eval(fp.read())
+	# 				print len(sub_list)
+	# 				reviewer_similarity_list += sub_list
+	# print len(reviewer_similarity_list)
+	# with open("reviewer_similarity_relation_all", "w") as fp:
+	# 	fp.write(str(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list)))
 	# summary_plot.save_graph(summary_plot.get_reviews_similarity_relation(reviewer_similarity_list),'reviewer_similarity.png', xlabel='Maxinum Similarity Score', ylabel='Number of Reviewers', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
