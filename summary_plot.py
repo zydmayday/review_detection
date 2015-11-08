@@ -48,12 +48,12 @@ def get_reviews_rating_relation(rating_list):
 	同时，这里对Y轴的数值进行了调整
 	"""
 	c = Counter(e for e in rating_list)
-	c = collections.OrderedDict(sorted(c.items()))
-	values = c.values()
-	values = [float(value) for value in values]
-	sum_rating_num = sum(values)
-	for value in c.values():
-		value = value / sum_rating_num
+	# c = collections.OrderedDict(sorted(c.items()))
+	# values = c.values()
+	# values = [float(value) for value in values]
+	# sum_rating_num = sum(values)
+	# for value in c.values():
+	# 	value = value / sum_rating_num
 	return c
 
 def get_reviewer_similarity(reviewer_content_dict):
@@ -83,6 +83,12 @@ def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', u
 	plt.ylabel(ylabel)
 	plt.xlabel(xlabel)
 	plt.title(title)
+	plt.axhline(y=0.1, color='black', alpha=0.5)
+	plt.axhline(y=0.2, color='black', alpha=0.5)
+	plt.axhline(y=0.3, color='black', alpha=0.5)
+	plt.axhline(y=0.4, color='black', alpha=0.5)
+	plt.axhline(y=0.5, color='black', alpha=0.5)
+	plt.axhline(y=0.6, color='black', alpha=0.5)
 	plt.axis([0, float(max(x_list))*1.2, 0, float(max(y_list))*1.2])
 	plt.savefig(saveFilename)
 
@@ -145,10 +151,25 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
-	fu.get_structure()
-	save_graph(get_reviews_rating_relation(fu.get_rating_list()), 'graphs/reviews_rating_all.png', plot_type='b-', use_log=[False, False],  xlabel='Percent of Reviews', ylabel='Rating', title='Rating v/s Percent of Reviews')
+	# fu = file_util.FileUtil()
+	# final_dict = {'1.0':0, '2.0':0, '3.0':0, '4.0':0, '5.0':0}
+	# for x in xrange(1,60):
+	# 	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew' + str(x))
+	# 	fu.get_structure()
+	# 	count_dict = get_reviews_rating_relation(fu.get_rating_list())
+	# 	print count_dict
+	# 	for key in final_dict.keys():
+	# 		final_dict[key] += count_dict[key]
+	# print final_dict
+	final_dict = {'5.0': 3360942, '2.0': 316981, '1.0': 482862, '4.0': 1170336, '3.0': 507449}
+	c = collections.OrderedDict(sorted(final_dict.items()))
+	values = c.values()
+	values = [float(value) for value in values]
+	sum_rating_num = sum(values)
+	for key in c.keys():
+		c[key] = c[key] / sum_rating_num
+	print c
+	save_graph(c, 'graphs/reviews_rating_all.png', plot_type='b-', use_log=[False, False],  ylabel='Percent of Reviews', xlabel='Rating', title='Rating v/s Percent of Reviews')
 	# print str(math.floor(0.348473 / 0.1) / 10)
 	# print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
 

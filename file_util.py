@@ -46,7 +46,14 @@ class FileUtil:
 		"""
 		col_len = len(columns)
 		if col_len == 1:
-			return [line[col] for col in columns for line in self.structure]
+			list = []
+			for line in self.structure:
+				try:
+					list.append(line[columns[0]])
+				except:
+					continue
+			return list
+			# return [line[col] for col in columns for line in self.structure]
 		else:
 			return [[line[col] for col in columns] for line in self.structure]
 

@@ -85,7 +85,10 @@ def split_file(file_name, line_num):
 			else:
 				count += 1
 
-# split_file('reviewsNew.txt', 100000)
+
+if __name__ == '__main__':
+
+	split_file('reviewsNew.txt', 100000)
 
 # mProduct_reviews = ''
 # for (dirname, dirs, files) in os.walk('./reviewsNew'):
