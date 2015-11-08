@@ -85,7 +85,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	fu.open_file('../AmazonDataBackup/reviewsNew.mP')
 	fu.get_structure()
 	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
