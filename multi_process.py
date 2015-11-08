@@ -85,7 +85,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew103.mP')
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
 	fu.get_structure()
 	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
@@ -108,6 +108,8 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 			if count % put_num == 0:
 				q.put(grams_pair_list)
 				grams_pair_list = []
+			if count % (put_num * 12) == 0:
+				time.sleep(1500)
 			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
 			grams_pair_list.append(grams_pair)
 			count += 1
@@ -207,4 +209,4 @@ if __name__ == '__main__':
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
 	# draw_graph('jaccard_distance')
-	draw_review_distance_multiprocess(list_num=2000, put_num=128)
+	draw_review_distance_multiprocess(put_num=2000)
