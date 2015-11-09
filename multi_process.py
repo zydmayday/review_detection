@@ -148,18 +148,18 @@ def draw_reviewer_similarity_multiprocess():
 	l = Lock()
 	start = time.time()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
 	fu.get_structure()
 	print 'finish get_structure() with %s s' % (time.time() - start)
 	# reviewer_content_dict = fu.get_reviewer_content_dict()
-	l.acquire()
-	with open('global_value.py', 'w') as fp:
-		fp.write('False')
-	l.release()
+	# l.acquire()
+	# with open('global_value.py', 'w') as fp:
+	# 	fp.write('False')
+	# l.release()
 	process_list = []
 	# producer = Process(target=producer, args=(q, l, 'producer', reviewer_content_dict))
 	# p.start()
-	for i in range(0,cpu_count()/2):
+	for i in range(0,cpu_count()):
 		p = Process(target=write_reviewer_similarity_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
@@ -169,20 +169,20 @@ def draw_reviewer_similarity_multiprocess():
 	for line in fu.structure:
 		reviewer = line[0]
 		if not reviewer in reviewer_content_dict.keys():
-			if count % 5000 == 0:
+			if count % 2000 == 0:
 				q.put(reviewer_content_dict)
 				reviewer_content_dict = {}
 			reviewer_content_dict[reviewer] = []
 			count += 1
 		reviewer_content_dict[reviewer].append(line[-1])
 	q.put(reviewer_content_dict)
-	for i in range(0,cpu_count()/2):
+	for i in range(0,cpu_count()):
 		q.put('STOP')
 	print 'finish puting with %s s' % (time.time() - start)
-	l.acquire()
-	with open('global_value.py', 'w') as fp:
-		fp.write('True')
-	l.release()
+	# l.acquire()
+	# with open('global_value.py', 'w') as fp:
+	# 	fp.write('True')
+	# l.release()
 	for p in process_list:
 		p.join()
 	finish_time = time.time() - start
