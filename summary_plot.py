@@ -1,6 +1,6 @@
 # coding:utf-8
 import operator
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import collections
 from sets import Set
 from collections import Counter
@@ -154,29 +154,27 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	pass
-	# print get_jd_list(get_2_grams_list(['a b c d e f', 'b c d e f g']))
-	# print [1,2,3] | [2,3,4]
+	fu = file_util.FileUtil()
+	final_dict = {}
+	for x in xrange(1,60):
+		fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew' + str(x))
+		fu.get_structure()
+		count_dict = get_reviews_feedbacks_relation(fu.get_feedback_list())
+		for feedback, num in count_dict.iteritems():
+			if feedback not in final_dict.keys():
+				final_dict[feedback] = 0
+			final_dict[feedback] += num
 
-	# fu = file_util.FileUtil()
-	# final_dict = {'1.0':0, '2.0':0, '3.0':0, '4.0':0, '5.0':0}
-	# for x in xrange(1,60):
-	# 	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew' + str(x))
-	# 	fu.get_structure()
-	# 	count_dict = get_reviews_rating_relation(fu.get_rating_list())
-	# 	print count_dict
-	# 	for key in final_dict.keys():
-	# 		final_dict[key] += count_dict[key]
-	# print final_dict
+	print final_dict
 	# final_dict = {'5.0': 3360942, '2.0': 316981, '1.0': 482862, '4.0': 1170336, '3.0': 507449}
-	# c = collections.OrderedDict(sorted(final_dict.items()))
+	c = collections.OrderedDict(sorted(final_dict.items()))
 	# values = c.values()
 	# values = [float(value) for value in values]
 	# sum_rating_num = sum(values)
 	# for key in c.keys():
 	# 	c[key] = c[key] / sum_rating_num
 	# print c
-	# save_graph(c, 'graphs/reviews_rating_all.png', plot_type='b-', use_log=[False, False],  ylabel='Percent of Reviews', xlabel='Rating', title='Rating v/s Percent of Reviews')
+	save_graph(c, 'graphs/reviews_feedback_all.png', use_log=[True, True],  ylabel='Num Reviews', xlabel='Num Feedbacks')
 	# print str(math.floor(0.348473 / 0.1) / 10)
 	# print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
 
