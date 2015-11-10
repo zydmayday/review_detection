@@ -2,21 +2,7 @@ import os
 import file_util
 
 
-# def get_file_line(file_name):
-
-# 	non_blank_count = 0
-
-# 	with open(file_name) as infp:
-# 		for line in infp.readlines():
-# 			# if line.startswith(' ') or 'BREAK-REVIEWED' in line:
-# 			non_blank_count += 1
-
-# 	return non_blank_count
-
-FU = file_util.FileUtil('../AmazonDataBackup/README.txt')
-# get the number of all reviews
-# 5838923
-# print get_file_line('reviewsNew.txt')
+# FU = file_util.FileUtil('../AmazonDataBackup/README.txt')
 
 def get_product_array(file_name):
 	product_array = []
@@ -24,19 +10,6 @@ def get_product_array(file_name):
 		for line in fp:
 			product_array.append(line.split('\t')[0])
 	return product_array
-
-# 36255    36246
-# product_array = get_product_array('productinfoXML-reviewed-mProducts.copy')
-
-# def get_reviewer_array(file_name):
-# 	reviewer_array = []
-# 	with open(file_name) as fp:
-# 		for line in fp:
-# 			reviewer_array.append(line.split('\t')[0])
-# 	return set(reviewer_array)
-
-# 164524
-# print len(get_reviewer_array('./reviewsNew/reviewsNew.copy'))
 
 def get_mP_reviews(file_name, product_array):
 	reviews = ''
@@ -48,15 +21,6 @@ def get_mP_reviews(file_name, product_array):
 	print 'finish writing ' + file_name + '.copy'
 	fp2.write(reviews)
 	fp2.close()
-
-
-
-# mp reviews num : 226764
-# get the mProduct reviews from file
-# for (dirname, dirs, files) in os.walk('./reviewsNew'):
-# 	for file in files:
-# 		get_mP_reviews('./reviewsNew/' + file, product_array)
-
 
 def write_txt_to_file(f, newfile, line_num):
 	file_txt = ''
@@ -98,8 +62,3 @@ if __name__ == '__main__':
 # 			mProduct_reviews += f.read()
 # with open('./reviewsNew/reviewsNew.copy', 'w') as fp:
 # 	fp.write(mProduct_reviews)
-
-
-
-
-

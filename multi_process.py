@@ -158,10 +158,6 @@ def draw_reviewer_similarity_multiprocess():
 	for i in range(0,cpu_count()/2):
 		q.put('STOP')
 	print 'finish puting with %s s' % (time.time() - start)
-	# l.acquire()
-	# with open('global_value.py', 'w') as fp:
-	# 	fp.write('True')
-	# l.release()
 	for p in process_list:
 		p.join()
 	finish_time = time.time() - start
