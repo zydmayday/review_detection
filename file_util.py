@@ -90,7 +90,7 @@ class FileUtil:
 
 	def get_reviewer_content_dict(self):
 		reviewer_content_dict = {}
-		self.structure = self.structure[0:10000]
+		self.structure = self.structure
 		for line in self.structure:
 			reviewer = line[0]
 			if not reviewer in reviewer_content_dict.keys():

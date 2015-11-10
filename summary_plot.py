@@ -1,6 +1,6 @@
 # coding:utf-8
 import operator
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import collections
 from sets import Set
 from collections import Counter
@@ -141,7 +141,6 @@ def get_reviews_similarity_relation(jd_list):
 		key = str(math.floor(jd / 0.1) / 10)
 		rs_relation_dict[key] += 1
 	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
-	print str(rs_relation_dict)
 	return rs_relation_dict
 
 
@@ -153,8 +152,7 @@ def get_reviews_similarity_relation(jd_list):
 
 if __name__ == '__main__':
 
-	for set in get_2_grams_list(['a', 'b', 'c', 'd', 'e', 'f']):
-		print str(set)
+	print get_jd_list(get_2_grams_list(['a b c d e f', 'b c d e f g']))
 
 	# fu = file_util.FileUtil()
 	# final_dict = {'1.0':0, '2.0':0, '3.0':0, '4.0':0, '5.0':0}
