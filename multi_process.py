@@ -32,6 +32,8 @@ def write_review_distance_to_file(q, l, name):
 	"""
 	print 'starting process %s' % name
 	dis_list = []
+	if not path.exists('jaccard_distance/'):
+		makedirs('jaccard_distance')
 	while True:
 		l.acquire()
 		if q.empty():
@@ -49,12 +51,10 @@ def write_review_distance_to_file(q, l, name):
 			for grams in grams_pair_list:
 				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
 				dis_list.append(jaccard_distance)
+			with open('./jaccard_distance/jd.' + str(name), 'w') as fp:
+				fp.write(str(dis_list))
 		# time.sleep(1)
 	# print 'writing to file'
-	if not path.exists('jaccard_distance/'):
-		makedirs('jaccard_distance')
-	with open('./jaccard_distance/jd.' + str(name), 'w') as fp:
-		fp.write(str(dis_list))
 
 def write_reviewer_similarity_to_file(q, l, name):
 	print 'starting process %s' % name
@@ -210,6 +210,6 @@ if __name__ == '__main__':
 	# 	finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
-	draw_graph('jaccard_distance', xlabel='Similarity Score', ylabel='Num Pairs', title='')
+	# draw_graph('jaccard_distance', xlabel='Similarity Score', ylabel='Num Pairs', title='')
 
-	# draw_review_distance_multiprocess(put_num=2000, list_num=50000)
+	draw_review_distance_multiprocess(put_num=5000, list_num=50000)
