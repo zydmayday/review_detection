@@ -51,8 +51,8 @@ def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 			for grams in grams_pair_list:
 				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
 				dis_list.append(jaccard_distance)
-			with open(dirname + '/jd.' + str(name), 'w') as fp:
-				fp.write(str(dis_list))
+	with open(dirname + '/jd.' + str(name), 'w') as fp:
+		fp.write(str(dis_list))
 		# time.sleep(1)
 	# print 'writing to file'
 
@@ -85,15 +85,16 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	l = Lock()
 	fu = file_util.FileUtil()
 	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	# fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew103.mP')
 	fu.get_structure()
 	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
 	
 	start = time.time()
 	process_list = []
-	cpu_num = cpu_count()
+	cpu_num = cpu_count()/2
 	for i in range(0,cpu_num):
-		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_all'})
+		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_2'})
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
@@ -107,7 +108,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 					q.put(grams_pair_list)
 					grams_pair_list = []
 				if not q.empty():
-					time.sleep(0.001)
+					time.sleep(0.0001)
 			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
 			grams_pair_list.append(grams_pair)
 			count += 1
