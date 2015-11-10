@@ -89,7 +89,7 @@ def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', u
 	# plt.axhline(y=0.4, color='black', alpha=0.5)
 	# plt.axhline(y=0.5, color='black', alpha=0.5)
 	# plt.axhline(y=0.6, color='black', alpha=0.5)
-	plt.axis([0, float(max(x_list))*1.2, 0, float(max(y_list))*1.2])
+	plt.axis([0, float(max(x_list))*1.2, 1, float(max(y_list))*1.1])
 	plt.savefig(saveFilename)
 
 def jaccard_distance(word1_set, words2_set):
@@ -136,9 +136,12 @@ def get_reviews_similarity_relation(jd_list):
 	"""
 	判断每个similarity区间内的数量
 	"""
-	rs_relation_dict = {'0.0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1.0':0}
+	# rs_relation_dict = {'0.0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1.0':0}
+	rs_relation_dict = {}
 	for jd in jd_list:
-		key = str(math.floor(jd / 0.1) / 10)
+		key = str(math.floor(jd / 0.01) / 100)
+		if key not in rs_relation_dict.keys():
+			rs_relation_dict[key] = 0
 		rs_relation_dict[key] += 1
 	rs_relation_dict = collections.OrderedDict(sorted(rs_relation_dict.items()))
 	return rs_relation_dict
@@ -151,8 +154,9 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-
-	print get_jd_list(get_2_grams_list(['a b c d e f', 'b c d e f g']))
+	pass
+	# print get_jd_list(get_2_grams_list(['a b c d e f', 'b c d e f g']))
+	# print [1,2,3] | [2,3,4]
 
 	# fu = file_util.FileUtil()
 	# final_dict = {'1.0':0, '2.0':0, '3.0':0, '4.0':0, '5.0':0}

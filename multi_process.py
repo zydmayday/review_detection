@@ -22,7 +22,7 @@ def producer(q, l, name, to_process_list):
 	l.release()
 	print 'finish puting', name
 
-def write_review_distance_to_file(q, l, name):
+def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 	"""
 	多进程方法
 	获取一个grams_pair的数组
@@ -32,8 +32,8 @@ def write_review_distance_to_file(q, l, name):
 	"""
 	print 'starting process %s' % name
 	dis_list = []
-	if not path.exists('jaccard_distance/'):
-		makedirs('jaccard_distance')
+	if not path.exists(dirname):
+		makedirs(dirname)
 	while True:
 		l.acquire()
 		if q.empty():
@@ -51,7 +51,7 @@ def write_review_distance_to_file(q, l, name):
 			for grams in grams_pair_list:
 				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
 				dis_list.append(jaccard_distance)
-			with open('./jaccard_distance/jd.' + str(name), 'w') as fp:
+			with open(dirname + '/jd.' + str(name), 'w') as fp:
 				fp.write(str(dis_list))
 		# time.sleep(1)
 	# print 'writing to file'
@@ -65,7 +65,7 @@ def write_reviewer_similarity_to_file(q, l, name):
 		l.acquire()
 		if q.empty():
 			l.release()
-			time.sleep(0.1)
+			# time.sleep(0.1)
 			continue
 		else:
 			reviewer_content_dict = q.get()
@@ -84,16 +84,16 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew.mP')
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
 	fu.get_structure()
 	content_list = fu.get_content_list()[0:list_num]
 	content_list_2_grams = summary_plot.get_2_grams_list(content_list)
 	
 	start = time.time()
 	process_list = []
-	cpu_num = cpu_count() / 2
+	cpu_num = cpu_count()
 	for i in range(0,cpu_num):
-		p = Process(target=write_review_distance_to_file, args=(q, l, i))
+		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_all'})
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
@@ -106,8 +106,8 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 				if count % put_num == 0:
 					q.put(grams_pair_list)
 					grams_pair_list = []
-				if count % 200000 == 0 or not q.empty():
-					time.sleep(0.1)
+				if not q.empty():
+					time.sleep(0.001)
 			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
 			grams_pair_list.append(grams_pair)
 			count += 1
@@ -127,7 +127,7 @@ def draw_reviewer_similarity_multiprocess():
 	l = Lock()
 	start = time.time()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew1')
+	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
 	fu.get_structure()
 	print 'finish get_structure() with %s s' % (time.time() - start)
 	# reviewer_content_dict = fu.get_reviewer_content_dict()
@@ -135,7 +135,7 @@ def draw_reviewer_similarity_multiprocess():
 	process_list = []
 	# producer = Process(target=producer, args=(q, l, 'producer', reviewer_content_dict))
 	# p.start()
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count()/2):
 		p = Process(target=write_reviewer_similarity_to_file, args=(q, l, i))
 		p.start()
 		process_list.append(p)
@@ -145,16 +145,16 @@ def draw_reviewer_similarity_multiprocess():
 	for line in fu.structure:
 		reviewer = line[0]
 		if not reviewer in reviewer_content_dict.keys():
-			if count % 10000 == 0 and count > 0:
+			if count % 1000 == 0 and count > 0:
 				q.put(reviewer_content_dict)
 				reviewer_content_dict = {}
 			if not q.empty():
-				time.sleep(0.1)
+				time.sleep(0.01)
 			reviewer_content_dict[reviewer] = []
 			count += 1
 		reviewer_content_dict[reviewer].append(line[-1])
 	q.put(reviewer_content_dict)
-	for i in range(0,cpu_count()):
+	for i in range(0,cpu_count()/2):
 		q.put('STOP')
 	print 'finish puting with %s s' % (time.time() - start)
 	# l.acquire()
@@ -189,6 +189,7 @@ if __name__ == '__main__':
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
 	# draw_graph('jaccard_distance', xlabel='Similarity Score', ylabel='Num Pairs', title='')
+	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	# draw_review_distance_multiprocess(put_num=10000)
-	draw_reviewer_similarity_multiprocess()
+	draw_review_distance_multiprocess(put_num=20000, list_num=110000)
+	# draw_reviewer_similarity_multiprocess()
