@@ -127,7 +127,7 @@ def draw_reviewer_similarity_multiprocess():
 	l = Lock()
 	start = time.time()
 	fu = file_util.FileUtil()
-	fu.open_file('../AmazonDataBackup/reviewsNew.txt')
+	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew1')
 	fu.get_structure()
 	print 'finish get_structure() with %s s' % (time.time() - start)
 	# reviewer_content_dict = fu.get_reviewer_content_dict()
@@ -190,4 +190,5 @@ if __name__ == '__main__':
 	# print time_dict
 	# draw_graph('jaccard_distance', xlabel='Similarity Score', ylabel='Num Pairs', title='')
 
-	draw_review_distance_multiprocess(put_num=10000)
+	# draw_review_distance_multiprocess(put_num=10000)
+	draw_reviewer_similarity_multiprocess()
