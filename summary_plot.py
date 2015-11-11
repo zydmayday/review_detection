@@ -1,6 +1,6 @@
 # coding:utf-8
 import operator
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import collections
 from sets import Set
 from collections import Counter

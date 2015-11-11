@@ -31,9 +31,11 @@ def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 	在任务完成之后，写入自己的进程对应的文件中
 	"""
 	print 'starting process %s' % name
-	dis_list = []
+	# dis_list = []
 	if not path.exists(dirname):
 		makedirs(dirname)
+	with open(dirname + '/jd.' + str(name), 'w') as fp:
+		fp.write('[]')
 	while True:
 		l.acquire()
 		if q.empty():
@@ -48,11 +50,16 @@ def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 				break
 			l.release()
 			# print 'process', name, 'have got ', len(grams_pair_list), 'reviews'
-			for grams in grams_pair_list:
-				jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
-				dis_list.append(jaccard_distance)
-	with open(dirname + '/jd.' + str(name), 'w') as fp:
-		fp.write(str(dis_list))
+			dis_list = []
+			with open(dirname + '/jd.' + str(name), 'r') as fp:
+				dis_list = ast.literal_eval(fp.read())
+			with open(dirname + '/jd.' + str(name), 'w') as fp:
+				# fp_list = ast.literal_eval(fp_list)
+				for grams in grams_pair_list:
+					jaccard_distance = summary_plot.jaccard_distance(grams[0], grams[1])
+					dis_list.append(jaccard_distance)
+				# print name, len(total_list)
+				fp.write(str(dis_list))
 		# time.sleep(1)
 	# print 'writing to file'
 
@@ -94,7 +101,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	process_list = []
 	cpu_num = cpu_count()/2
 	for i in range(0,cpu_num):
-		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_2'})
+		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_11wan'})
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
@@ -185,8 +192,8 @@ if __name__ == '__main__':
 	# 	finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
-	# draw_graph('jaccard_distance', xlabel='Similarity Score', ylabel='Num Pairs', title='')
+	# draw_graph('jaccard_distance_2000', xlabel='Similarity Score', ylabel='Num Pairs', title='')
 	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	draw_review_distance_multiprocess(put_num=20000, list_num=110000)
+	draw_review_distance_multiprocess(put_num=50000, list_num=110000)
 	# draw_reviewer_similarity_multiprocess()
