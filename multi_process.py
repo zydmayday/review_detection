@@ -195,5 +195,5 @@ if __name__ == '__main__':
 	# draw_graph('jaccard_distance_2000', xlabel='Similarity Score', ylabel='Num Pairs', title='')
 	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	draw_review_distance_multiprocess(put_num=50000, list_num=110000)
+	draw_review_distance_multiprocess(put_num=20000, list_num=110000)
 	# draw_reviewer_similarity_multiprocess()
