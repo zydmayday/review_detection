@@ -65,7 +65,7 @@ def get_reviewer_similarity(reviewer_content_dict):
 				similarity_list.append(max(jd_list))
 	return similarity_list
 
-def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], log_base=[10, 10], plot_type='rx', title=''):
+def save_graph(dict, saveFilename, xlabel='Num Reviews', ylabel='Num Members', use_log=[True,True], log_base=[10, 10], plot_type='rx', title='', color='red'):
 	"""
 	作图
 	给定的x_list和y_list作图，并根据一定的参数进行修饰
@@ -154,27 +154,28 @@ def get_reviews_similarity_relation(jd_list):
 # save_graph(get_reviews_similarity_relation(get_jd_list(fu.get_content_list()[3000:8000])), 'review_similarity.png', use_log=[False, True], plot_type='bo-')
 
 if __name__ == '__main__':
-	# fu = file_util.FileUtil()
-	# final_dict = {}
-	# for x in xrange(1,60):
-	# 	fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew' + str(x))
-	# 	fu.get_structure()
-	# 	count_dict = get_reviews_feedbacks_relation(fu.get_feedback_list())
-	# 	for feedback, num in count_dict.iteritems():
-	# 		if feedback not in final_dict.keys():
-	# 			final_dict[feedback] = 0
-	# 		final_dict[feedback] += num
+	fu = file_util.FileUtil()
+	final_dict = {}
+	for x in xrange(1,2):
+		fu.open_file('../AmazonDataBackup/reviewsNew/reviewsNew' + str(x))
+		fu.get_structure()
+		count_dict = get_reviews_feedbacks_relation(fu.get_feedback_list())
+		for feedback, num in count_dict.iteritems():
+			if feedback not in final_dict.keys():
+				final_dict[feedback] = 0
+			final_dict[feedback] += num
 
-	# print final_dict
+	print final_dict
 	# final_dict = {'5.0': 3360942, '2.0': 316981, '1.0': 482862, '4.0': 1170336, '3.0': 507449}
-	c = collections.OrderedDict(sorted({'0.9': 92, '0.8': 42, '1.0': 332, '0.1': 707, '0.0': 66243127, '0.3': 54, '0.2': 50, '0.5': 22, '0.4': 23, '0.7': 27, '0.6': 21}.items()))
+	# c = collections.OrderedDict(sorted({'0.9': 92, '0.8': 42, '1.0': 332, '0.1': 707, '0.0': 66243127, '0.3': 54, '0.2': 50, '0.5': 22, '0.4': 23, '0.7': 27, '0.6': 21}.items()))
+	c = collections.OrderedDict(sorted(final_dict.items()))
 	# values = c.values()
 	# values = [float(value) for value in values]
 	# sum_rating_num = sum(values)
 	# for key in c.keys():
 	# 	c[key] = c[key] / sum_rating_num
 	# print c
-	save_graph(c, 'graphs/reviews_similarity_11000.png', use_log=[False, True],  ylabel='Num Reviews', xlabel='Num Feedbacks', plot_type='rx-')
+	save_graph(c, 'graphs/reviewer_similarity.png', use_log=[False, True],  xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', plot_type='k,-')
 	# print str(math.floor(0.348473 / 0.1) / 10)
 	# print get_reviews_similarity_relation([0.4232,0.123123, 0.986, 0.9999, 0.0])
 
