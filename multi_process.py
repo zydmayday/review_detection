@@ -190,7 +190,7 @@ def draw_graph(dirname, title, xlabel, ylabel):
 					# jd_list += sub_list
 	# print len(jd_list)
 	print jd_dict
-	# summary_plot.save_graph(collections.OrderedDict(sorted(jd_dict.items())), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='bo-', xlabel=xlabel, ylabel=ylabel, title=title)
+	summary_plot.save_graph(collections.OrderedDict(sorted(jd_dict.items())), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='r,', xlabel=xlabel, ylabel=ylabel, title=title, lw=3)
 
 
 
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
 	# draw_graph('jaccard_distance_11wan', xlabel='Similarity Score', ylabel='Num Pairs', title='')
-	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
+	draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	draw_review_distance_multiprocess(put_num=1000000, list_num=110000)
+	# draw_review_distance_multiprocess(put_num=1000000, list_num=110000)
 	# draw_reviewer_similarity_multiprocess()
