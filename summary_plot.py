@@ -140,7 +140,7 @@ def get_reviews_similarity_relation(jd_list):
 	# rs_relation_dict = {'0.0':0, '0.1':0, '0.2':0, '0.3':0, '0.4':0, '0.5':0, '0.6':0, '0.7':0, '0.8':0, '0.9':0, '1.0':0}
 	rs_relation_dict = {}
 	for jd in jd_list:
-		key = str(math.floor(jd / 0.01) / 100)
+		key = str(math.floor(jd / 0.1) / 10)
 		if key not in rs_relation_dict.keys():
 			rs_relation_dict[key] = 0
 		rs_relation_dict[key] += 1
