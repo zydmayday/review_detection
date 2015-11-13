@@ -37,6 +37,7 @@ def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 		makedirs(dirname)
 	count = 0
 	while True:
+		dis_list = []
 		l.acquire()
 		if q.empty():
 			l.release()
@@ -50,7 +51,7 @@ def write_review_distance_to_file(q, l, name, dirname='jaccard_distance'):
 				break
 			l.release()
 			print 'process', name, 'have got ', len(grams_pair_list), 'reviews'
-			dis_list = []
+			# dis_list = []
 			with open(dirname + '/jd.' + str(name) + '_' + str(count), 'w') as fp:
 
 				# fp_list = ast.literal_eval(fp_list)
@@ -253,6 +254,6 @@ if __name__ == '__main__':
 	# draw_graph('jaccard_distance_110000', xlabel='Similarity Score', ylabel='Num Pairs', title='')
 	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	# draw_review_distance_multiprocess(put_num=1000000)
+	draw_review_distance_multiprocess(put_num=1000000, list_num=220000)
 	# draw_reviewer_similarity_multiprocess()
-	draw_jd_dict_multiprocess()
+	# draw_jd_dict_multiprocess()
