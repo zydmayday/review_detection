@@ -1,5 +1,5 @@
 # coding:utf-8
-from multiprocessing import Pool, Process, Lock, Queue, cpu_count
+from multiprocessing import Pool, Process, Lock, Queue, cpu_count, Manager
 import summary_plot
 import file_util
 import time
@@ -87,6 +87,31 @@ def write_reviewer_similarity_to_file(q, l, name):
 				fp.write(str(similarity_list))
 			# print 'process' , name,' have done ', str(len(similarity_list))
 
+def write_jd_dict_to_file(q, l, m, name):
+	print 'starting process %s' % name
+	while True:
+		l.acquire()
+		if q.empty():
+			l.release()
+			continue
+		else:
+			filename = q.get()
+			if filename == 'STOP':
+				print 'process', name, ' exit'
+				l.release()
+				break
+			l.release()
+			with open(filename) as fp:
+				sub_list = ast.literal_eval(fp.read())
+				rs_relation_dict = summary_plot.get_reviews_similarity_relation(sub_list)
+				l.acquire()
+				print 'process ', name, str(rs_relation_dict)
+				for feedback, num in rs_relation_dict.iteritems():
+					if feedback not in m.keys():
+						m[feedback] = 0
+					m[feedback] += num
+				l.release()
+
 def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	q = Queue()
 	l = Lock()
@@ -101,7 +126,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 	process_list = []
 	cpu_num = cpu_count()/2
 	for i in range(0,cpu_num):
-		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_110000'})
+		p = Process(target=write_review_distance_to_file, args=(q, l, i), kwargs={'dirname':'jaccard_distance_220000'})
 		p.start()
 		process_list.append(p)
 	reviews_len = len(content_list_2_grams)
@@ -115,7 +140,7 @@ def draw_review_distance_multiprocess(list_num=-1, put_num=10000):
 					q.put(grams_pair_list)
 					grams_pair_list = []
 					count = 0
-				if not q.empty():
+				if not q.empty() and count > put_num:
 					print 'queue waiting', count
 					time.sleep(0.1)
 			grams_pair = [content_list_2_grams[i], content_list_2_grams[j]]
@@ -173,6 +198,30 @@ def draw_reviewer_similarity_multiprocess():
 	print 'exit main with %s s' % finish_time
 	# return finish_time
 
+def draw_jd_dict_multiprocess():
+	q = Queue()
+	l = Lock()
+	manager = Manager()
+	m = manager.dict()
+	process_list = []
+	for i in range(0,cpu_count()/2):
+		p = Process(target=write_jd_dict_to_file, args=(q, l, m, i))
+		p.start()
+		process_list.append(p)
+
+	for (dirpath, dirnames, filenames) in walk('jaccard_distance_110000'):
+		for filename in filenames:
+			if not filename.startswith('.'):
+				q.put('jaccard_distance_110000/' + filename)
+				print 'queue puts ', 'jaccard_distance_110000/' ,filename
+	
+	for i in range(0,cpu_count()/2):
+		q.put('STOP')
+	for p in process_list:
+		p.join()
+
+	print str(m)
+
 def draw_graph(dirname, title, xlabel, ylabel):
 	jd_list = []
 	jd_dict = {}
@@ -190,7 +239,7 @@ def draw_graph(dirname, title, xlabel, ylabel):
 					# jd_list += sub_list
 	# print len(jd_list)
 	print jd_dict
-	summary_plot.save_graph(collections.OrderedDict(sorted(jd_dict.items())), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='r,', xlabel=xlabel, ylabel=ylabel, title=title, lw=3)
+	# summary_plot.save_graph(collections.OrderedDict(sorted(jd_dict.items())), 'graphs/' + dirname + '.png', use_log=[False, True], plot_type='r,', xlabel=xlabel, ylabel=ylabel, title=title, lw=3)
 
 
 
@@ -201,8 +250,9 @@ if __name__ == '__main__':
 	# 	finish_time = draw_review_distance_multiprocess(list_num=1000, put_num=put_num)
 	# 	time_dict[put_num] = finish_time
 	# print time_dict
-	# draw_graph('jaccard_distance_11wan', xlabel='Similarity Score', ylabel='Num Pairs', title='')
-	draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
+	# draw_graph('jaccard_distance_110000', xlabel='Similarity Score', ylabel='Num Pairs', title='')
+	# draw_graph('reviewer_similarity', xlabel='Maximum Similarity Score', ylabel='Number of Reviewers', title='')
 
-	# draw_review_distance_multiprocess(put_num=1000000, list_num=110000)
+	draw_review_distance_multiprocess(put_num=2000000)
 	# draw_reviewer_similarity_multiprocess()
+	# draw_jd_dict_multiprocess()
