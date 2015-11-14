@@ -103,6 +103,7 @@ class FileUtil:
 		# for reviewer in to_pop_reviewers:
 		# 	reviewer_content_dict.pop(reviewer, None)
 		return reviewer_content_dict
+
 		
 if __name__ == '__main__':
 	fu = FileUtil('../AmazonDataBackup/reviewsNew.txt')

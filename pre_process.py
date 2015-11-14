@@ -4,6 +4,7 @@ import file_util
 
 # FU = file_util.FileUtil('../AmazonDataBackup/README.txt')
 
+
 def get_product_array(file_name):
 	product_array = []
 	with open(file_name) as fp:
@@ -17,9 +18,20 @@ def get_mP_reviews(file_name, product_array):
 		for line in fp:
 			if line.split('\t')[1] in product_array:
 				reviews += line
-	fp2 = open(file_name + '.copy', 'w')
-	print 'finish writing ' + file_name + '.copy'
+	fp2 = open(file_name + '.mp', 'w')
+	print 'finish writing ' + file_name + '.mp'
 	fp2.write(reviews)
+	fp2.close()
+
+def get_mP_products(file_name, product_array):
+	mProducts = ''
+	with open(file_name) as fp:
+		for line in fp:
+			if line.split('\t')[0] in product_array:
+				mProducts += line
+	fp2 = open(file_name + '.mp', 'w')
+	print 'finish writing ' + file_name + '.mp'
+	fp2.write(mProducts)
 	fp2.close()
 
 def write_txt_to_file(f, newfile, line_num):
@@ -51,14 +63,34 @@ def split_file(file_name, line_num):
 
 
 if __name__ == '__main__':
+	product_array = get_product_array('../AmazonDataBackup/productInfoXML-reviewed-mProducts.copy')
+	print len(mProduct_array)
+	# mProduct_reviews = ''
+	mProductinfo = ''
+	for (dirname, dirs, files) in os.walk('../AmazonDataBackup/productinfo'):
+		for file in files[0:1]:
+			print file
+			with open('../AmazonDataBackup/productinfo/' + file) as f:
+				for line in f.readlines()[0:10]:
+					print line.split('\t')[0]
+					if line.split('\t')[0] in mProduct_array:
+						mProductinfo += line
+				# mProduct_reviews += f.read()
+	with open('../AmazonDataBackup/productinfo/productinfo.copy', 'w') as fp:
+		fp.write(mProductinfo)
+	# get_mP_reviews('../AmazonDataBackup/reviewsNew.txt', product_array)
+	# get_mP_products('../AmazonDataBackup/productinfo.txt', product_array)
+	# with open('../AmazonDataBackup/productinfo.txt') as fp:
+	# 	for line in fp.readlines()[0:5]:
+	# 		print line
+	# split_file('reviewsNew.txt', 100000)
+	# split_file('../AmazonDataBackup/productinfo.txt', 100000)
 
-	split_file('reviewsNew.txt', 100000)
-
-# mProduct_reviews = ''
-# for (dirname, dirs, files) in os.walk('./reviewsNew'):
-# 	for file in files:
-# 		print file
-# 		with open('./reviewsNew/' + file) as f:
-# 			mProduct_reviews += f.read()
-# with open('./reviewsNew/reviewsNew.copy', 'w') as fp:
-# 	fp.write(mProduct_reviews)
+	# mProduct_reviews = ''
+	# for (dirname, dirs, files) in os.walk('./reviewsNew'):
+	# 	for file in files:
+	# 		print file
+	# 		with open('./reviewsNew/' + file) as f:
+	# 			mProduct_reviews += f.read()
+	# with open('./reviewsNew/reviewsNew.copy', 'w') as fp:
+	# 	fp.write(mProduct_reviews)
