@@ -70,17 +70,26 @@ class FileUtil:
 		"""
 		return self.get_column_list(columns=[1])
 
-	def get_feedback_list(self):
+	def get_help_feedback_list(self):
 		"""
 		获取feedback的list，这个是helpful的数量
 		"""
 		return self.get_column_list(columns=[3])
+
+	def get_feedback_list(self):
+		"""
+		获取feedback的list
+		"""
+		return self.get_column_list(columns=[4])
 
 	def get_rating_list(self):
 		"""
 		获取rating的list
 		"""
 		return self.get_column_list(columns=[5])
+
+	def get_title_list(self):
+		return self.get_column_list(columns=[6])
 
 	def get_content_list(self):
 		"""

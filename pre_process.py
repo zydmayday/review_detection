@@ -83,7 +83,7 @@ if __name__ == '__main__':
 	# with open('../AmazonDataBackup/productinfo.txt') as fp:
 	# 	for line in fp.readlines()[0:5]:
 	# 		print line
-	split_file('reviewsNew.txt', 100000)
+	# split_file('reviewsNew.txt', 100000)
 	# split_file('../AmazonDataBackup/productinfo.txt', 100000)
 
 	# mProduct_reviews = ''
