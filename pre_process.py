@@ -63,27 +63,27 @@ def split_file(file_name, line_num):
 
 
 if __name__ == '__main__':
-	product_array = get_product_array('../AmazonDataBackup/productInfoXML-reviewed-mProducts.copy')
-	print len(mProduct_array)
-	# mProduct_reviews = ''
-	mProductinfo = ''
-	for (dirname, dirs, files) in os.walk('../AmazonDataBackup/productinfo'):
-		for file in files[0:1]:
-			print file
-			with open('../AmazonDataBackup/productinfo/' + file) as f:
-				for line in f.readlines()[0:10]:
-					print line.split('\t')[0]
-					if line.split('\t')[0] in mProduct_array:
-						mProductinfo += line
+	# product_array = get_product_array('../AmazonDataBackup/productInfoXML-reviewed-mProducts.copy')
+	# print len(mProduct_array)
+	# # mProduct_reviews = ''
+	# mProductinfo = ''
+	# for (dirname, dirs, files) in os.walk('../AmazonDataBackup/productinfo'):
+	# 	for file in files[0:1]:
+	# 		print file
+	# 		with open('../AmazonDataBackup/productinfo/' + file) as f:
+	# 			for line in f.readlines()[0:10]:
+	# 				print line.split('\t')[0]
+	# 				if line.split('\t')[0] in mProduct_array:
+	# 					mProductinfo += line
 				# mProduct_reviews += f.read()
-	with open('../AmazonDataBackup/productinfo/productinfo.copy', 'w') as fp:
-		fp.write(mProductinfo)
+	# with open('productinfo/productinfo.copy', 'w') as fp:
+	# 	fp.write(mProductinfo)
 	# get_mP_reviews('../AmazonDataBackup/reviewsNew.txt', product_array)
 	# get_mP_products('../AmazonDataBackup/productinfo.txt', product_array)
 	# with open('../AmazonDataBackup/productinfo.txt') as fp:
 	# 	for line in fp.readlines()[0:5]:
 	# 		print line
-	# split_file('reviewsNew.txt', 100000)
+	split_file('reviewsNew.txt', 100000)
 	# split_file('../AmazonDataBackup/productinfo.txt', 100000)
 
 	# mProduct_reviews = ''
