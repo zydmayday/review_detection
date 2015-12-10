@@ -23,7 +23,7 @@ def rank_dict(dict, reverse):
 
 	return rank_list
 
-# WORD = re.compile(r'\w+')
+WORD = re.compile(r'\w+')
 
 def get_cosine(vec1, vec2):
 	intersection = set(vec1.keys()) & set(vec2.keys())
@@ -38,10 +38,19 @@ def get_cosine(vec1, vec2):
 	else:
 		return float(numerator) / denominator
 
-def text_to_vector(text):
-	words = text.split(' ')
-	# words = WORD.findall(text)
+def text_to_vector(text, format=r'\w+'):
+	# words = text.split(' ')
+	word_format = re.compile(format)
+	words = word_format.findall(text)
 	return Counter(words)
+
+def product_brand_dict(file_name):
+	product_brand_dict = {}
+	with open(file_name) as fp:
+		for line in fp.readlines():
+			product_info = line.split('\t')
+			product_brand_dict[product_info[0]] = product_info[2]
+	return product_brand_dict
 
 
 class Feature:
@@ -216,7 +225,7 @@ class Feature:
 
 	def save_f12(self):
 		review_txt = ""
-		product_content_list = self.fu.get_column_list([1,7])
+		product_content_list = self.fu.get_column_list([1,-1])
 		product_feature_list = {}
 		with open('../AmazonDataBackup/productInfoXML-reviewed-mProducts.features') as fp:
 			for line in fp:
@@ -233,6 +242,78 @@ class Feature:
 		with open(self.new_file + '12', 'w') as fp:
 			fp.write(review_txt)
 
+	def save_f13(self):
+		review_txt = ""
+		product_content_list = self.fu.get_column_list([1,-1])
+		p_b_dict = product_brand_dict('../AmazonDataBackup/productInfoXML-reviewed-mProducts.copy')
+		
+		with open(self.old_file + '12') as fp:
+			for index, line in enumerate(fp.readlines()):
+				product_id = product_content_list[index][0]
+				content = product_content_list[index][1].lower()
+				content = WORD.findall(content)
+				counted_content = Counter(content)
+				brand = p_b_dict[product_id]
+				try:
+					brand_num = counted_content[brand]
+					review_txt += line.replace('\n', '') + '\t' + str(float(brand_num) / len(content)) +'\n'
+				except:
+					brand_num = 0
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+				
+		with open(self.new_file + '13', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f14(self):
+		review_txt = ""
+		content_list = self.fu.get_content_list()
+		format = re.compile(r'\d+')
+		with open(self.old_file + '13') as fp:
+			for index, line in enumerate(fp.readlines()):
+				content = content_list[index]
+				number = len(format.findall(content))
+				content = re.compile(r'\w+').findall(content)
+				if len(content):
+					review_txt += line.replace('\n', '') + '\t' + str(float(number) / len(content)) +'\n'
+				else:
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+				
+		with open(self.new_file + '14', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f15(self):
+		review_txt = ""
+		content_list = self.fu.get_content_list()
+		with open(self.old_file + '14') as fp:
+			for index, line in enumerate(fp.readlines()):
+				content = content_list[index]
+				capital_num = sum(1 for c in content if c.isupper())
+				content = re.compile(r'\w+').findall(content)
+				if len(content):
+					review_txt += line.replace('\n', '') + '\t' + str(float(capital_num) / len(content)) +'\n'
+				else:
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+				
+		with open(self.new_file + '15', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f16(self):
+		review_txt = ""
+		content_list = self.fu.get_content_list()[0:20]
+		with open(self.old_file + '15') as fp:
+			for index, line in enumerate(fp.readlines()[0:20]):
+				content = re.compile(r'\w+').findall(content_list[index])
+				capital_num = sum(1 for c in content if c.isupper())
+				print content, capital_num
+				# content = re.compile(r'\w+').findall(content)
+				if len(content):
+					review_txt += line.replace('\n', '') + '\t' + str(float(capital_num) / len(content)) +'\n'
+				else:
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+				
+		with open(self.new_file + '16', 'w') as fp:
+			fp.write(review_txt)
+
 if __name__ == "__main__":
 	fea = Feature('../AmazonDataBackup/reviewsNew/reviews.features', '../AmazonDataBackup/reviewsNew/reviews.features' ,filename='../AmazonDataBackup/reviewsNew/reviewsNew.mp')
 	# fea.save_reviewerid()
@@ -247,7 +328,9 @@ if __name__ == "__main__":
 	# fea.save_f9()
 	# fea.save_f10()
 	# fea.save_f11()
-	fea.save_f12()
+	# fea.save_f12()
+	# fea.save_f13()
+	# fea.save_f14()
+	# fea.save_f15()
+	fea.save_f16()
 
-
-	
