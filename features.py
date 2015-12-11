@@ -15,11 +15,12 @@ def rank_dict(dict, reverse):
 	rank_list = {}
 	for product, date_list in dict.iteritems():
 		date_list = sorted(date_list.items(), key=operator.itemgetter(1), reverse=reverse)
+		try:
+			rank_list[product]
+		except:
+			rank_list[product] = {}
 		for idx, date in enumerate(date_list):
-			rank_list[date[0]] = idx
-		# date_list = [ (date[0], idx) for idx, date in enumerate(date_list)]
-		# rank_list += date_list
-
+			rank_list[product][date[0]] = idx
 
 	return rank_list
 
@@ -52,6 +53,22 @@ def product_brand_dict(file_name):
 			product_brand_dict[product_info[0]] = product_info[2]
 	return product_brand_dict
 
+def product_avg_rating(product_rating_list):
+	dict = {}
+	dict_2 = {}
+	for item in product_rating_list:
+		product_id = item[0]
+		rating = item[1]
+		try:
+			dict[product_id] += 1
+			dict_2[product_id] += float(rating)
+		except:
+			dict[product_id] = 1
+			dict_2[product_id] = float(rating)
+			
+	for key in dict.keys():
+		dict_2[key] = dict_2[key] / dict[key]
+	return dict_2
 
 class Feature:
 	def __init__(self, old_file, new_file, filename=""):
@@ -136,7 +153,7 @@ class Feature:
 		rank_list = rank_dict(dict, False)
 		with open(self.old_file + '5') as fp:
 			for index, line in enumerate(fp.readlines()):
-				review_txt += line.replace('\n', '') + '\t' + str(rank_list[index] + 1) + '\n'
+				review_txt += line.replace('\n', '') + '\t' + str(rank_list[product][index] + 1) + '\n'
 		with open(self.new_file + '6', 'w') as fp:
 			fp.write(review_txt) 
 
@@ -158,7 +175,7 @@ class Feature:
 		# 	fp.write(str(dict))
 		with open(self.old_file + '6') as fp:
 			for index, line in enumerate(fp.readlines()):
-				review_txt += line.replace('\n', '') + '\t' + str(rank_list[index] + 1) + '\n'
+				review_txt += line.replace('\n', '') + '\t' + str(rank_list[product][index] + 1) + '\n'
 		with open(self.new_file + '7', 'w') as fp:
 			fp.write(review_txt) 
 
@@ -299,12 +316,11 @@ class Feature:
 
 	def save_f16(self):
 		review_txt = ""
-		content_list = self.fu.get_content_list()[0:20]
+		content_list = self.fu.get_content_list()
 		with open(self.old_file + '15') as fp:
-			for index, line in enumerate(fp.readlines()[0:20]):
+			for index, line in enumerate(fp.readlines()):
 				content = re.compile(r'\w+').findall(content_list[index])
 				capital_num = sum(1 for c in content if c.isupper())
-				print content, capital_num
 				# content = re.compile(r'\w+').findall(content)
 				if len(content):
 					review_txt += line.replace('\n', '') + '\t' + str(float(capital_num) / len(content)) +'\n'
@@ -312,6 +328,130 @@ class Feature:
 					review_txt += line.replace('\n', '') + '\t' + '0\n'
 				
 		with open(self.new_file + '16', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f17(self):
+		review_txt = ""
+		rating_list = self.fu.get_rating_list()
+		with open(self.old_file + '16') as fp:
+			for index, line in enumerate(fp.readlines()):
+				review_txt += line.replace('\n', '') + '\t' + str(rating_list[index]) +'\n'
+				
+		with open(self.new_file + '17', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f18(self):
+		review_txt = ""
+		product_rating_list = self.fu.get_column_list([1, 5])
+		product_avg_rating_dict = product_avg_rating(product_rating_list)
+		with open(self.old_file + '17') as fp:
+			for index, line in enumerate(fp.readlines()):
+				product_id = product_rating_list[index][0]
+				rating = product_rating_list[index][1]
+				review_txt += line.replace('\n', '') + '\t' + str(float(rating) - product_avg_rating_dict[product_id]) +'\n'
+				
+		with open(self.new_file + '18', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f19(self):
+		review_txt = ""
+		rating_list = self.fu.get_rating_list()
+		with open(self.old_file + '18') as fp:
+			for index, line in enumerate(fp.readlines()):
+				try:
+					rating = float(rating_list[index])
+					if rating >= 4:
+						review_txt += line.replace('\n', '') + '\t' + '1\n'
+					elif rating <= 2.5:
+						review_txt += line.replace('\n', '') + '\t' + '-1\n'
+					else:
+						review_txt += line.replace('\n', '') + '\t' + '0\n'
+				except:
+					print index
+				
+		with open(self.new_file + '19', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f20(self):
+		review_txt = ""
+		reviewer_product_date_list = self.fu.get_column_list([1,2])
+		review_txt = ""
+		dict = {}
+		for idx, reviewer_product_date in enumerate(reviewer_product_date_list):
+			product = reviewer_product_date[0]
+			date = reviewer_product_date[1]
+			if product not in dict:
+				dict[product] = {}
+			try:
+				dict[product][idx] = parse(date)
+			except:
+				print date
+		rank_list = rank_dict(dict, False)
+		with open(self.old_file + '19') as fp:
+			features = fp.readlines()
+			for index, line in enumerate(features):
+				product_id = reviewer_product_date_list[index][0]
+				rank = rank_list[product_id][index]
+				rating_type = int(line.split('\t')[19])
+				if rank == 1 and rating_type == -1:
+					# print rank_list[product_id]
+					# print rank_list[product_id]
+					# print index
+					first_review_index = 0
+					for review in rank_list[product_id].keys():
+						if rank_list[product_id][review] == 0:
+							first_review_index = review
+					if int(features[first_review_index].split('\t')[19]) == 1:
+						print index, first_review_index
+						review_txt += line.replace('\n', '') + '\t' + '1\n'
+					else:
+						review_txt += line.replace('\n', '') + '\t' + '0\n'
+				else:
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+
+				
+		with open(self.new_file + '20', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f21(self):
+		review_txt = ""
+		reviewer_product_date_list = self.fu.get_column_list([1,2])
+		review_txt = ""
+		dict = {}
+		for idx, reviewer_product_date in enumerate(reviewer_product_date_list):
+			product = reviewer_product_date[0]
+			date = reviewer_product_date[1]
+			if product not in dict:
+				dict[product] = {}
+			try:
+				dict[product][idx] = parse(date)
+			except:
+				print date
+		rank_list = rank_dict(dict, True)
+		with open(self.old_file + '20') as fp:
+			features = fp.readlines()
+			for index, line in enumerate(features):
+				product_id = reviewer_product_date_list[index][0]
+				rank = rank_list[product_id][index]
+				rating_type = int(line.split('\t')[19])
+				if rank == 1 and rating_type == 1:
+					# print rank_list[product_id]
+					# print rank_list[product_id]
+					# print index
+					first_review_index = 0
+					for review in rank_list[product_id].keys():
+						if rank_list[product_id][review] == 0:
+							first_review_index = review
+					if int(features[first_review_index].split('\t')[19]) == -1:
+						print index, first_review_index
+						review_txt += line.replace('\n', '') + '\t' + '1\n'
+					else:
+						review_txt += line.replace('\n', '') + '\t' + '0\n'
+				else:
+					review_txt += line.replace('\n', '') + '\t' + '0\n'
+
+				
+		with open(self.new_file + '21', 'w') as fp:
 			fp.write(review_txt)
 
 if __name__ == "__main__":
@@ -332,5 +472,11 @@ if __name__ == "__main__":
 	# fea.save_f13()
 	# fea.save_f14()
 	# fea.save_f15()
-	fea.save_f16()
+	# fea.save_f16()
+	# fea.save_f17()
+	# fea.save_f18()
+	# fea.save_f19()
+	# fea.save_f20()
+	fea.save_f21()
+
 
