@@ -454,6 +454,121 @@ class Feature:
 		with open(self.new_file + '21', 'w') as fp:
 			fp.write(review_txt)
 
+	def save_f22(self):
+		review_txt = ""
+		
+		with open(self.old_file + '21') as fp:
+			reviewers = {}
+			lines = fp.readlines()
+			for line in lines:
+				features = line.split('\t')
+				if not reviewers.has_key(features[0]):
+					reviewers[features[0]] = {'review_num': 0, 'first_review_num': 0.0}
+				if int(features[8]) == 1:
+					reviewers[features[0]]['first_review_num'] += 1
+				reviewers[features[0]]['review_num'] += 1
+			# features = [line.split('\t') for line in lines]
+			print 'finish features'
+			for index, line in enumerate(lines):
+				features = line.split('\t')
+				review_id = features[0]
+				review_num = reviewers[review_id]['review_num']
+				first_review_num = reviewers[review_id]['first_review_num']
+				if first_review_num > 0 and first_review_num != review_num:
+					print index, first_review_num
+				review_txt += lines[index].replace('\n', '') + '\t' + str(first_review_num / review_num) +'\n'
+
+				
+		with open(self.new_file + '22', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f23(self):
+		review_txt = ""
+		
+		with open(self.old_file + '22') as fp:
+			reviewers = {}
+			lines = fp.readlines()
+			for line in lines:
+				features = line.split('\t')
+				if not reviewers.has_key(features[0]):
+					reviewers[features[0]] = {'review_num': 0, 'only_review_num': 0.0}
+				if int(features[9]) == 1:
+					reviewers[features[0]]['only_review_num'] += 1
+				reviewers[features[0]]['review_num'] += 1
+			# features = [line.split('\t') for line in lines]
+			print 'finish features'
+			for index, line in enumerate(lines):
+				features = line.split('\t')
+				review_id = features[0]
+				review_num = reviewers[review_id]['review_num']
+				only_review_num = reviewers[review_id]['only_review_num']
+				if only_review_num > 0 and only_review_num != review_num:
+					print index, only_review_num
+				review_txt += lines[index].replace('\n', '') + '\t' + str(only_review_num / review_num) +'\n'
+
+				
+		with open(self.new_file + '23', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f24(self):
+		review_txt = ""
+		reviewer_rating_list = self.fu.get_column_list([0,5])
+		reviewers = {}
+		for reviewer_rating in reviewer_rating_list:
+			reviewer_id = reviewer_rating[0]
+			rating = reviewer_rating[1]
+			if not reviewers.has_key(reviewer_id):
+				reviewers[reviewer_id] = {'ratings': [], 'avg_rating': 0.0}
+			reviewers[reviewer_id]['ratings'].append(float(rating))
+
+		for reviewer_id in reviewers.keys():
+			ratings = reviewers[reviewer_id]['ratings']
+			reviewers[reviewer_id]['avg_rating'] = sum(ratings) / len(ratings)
+
+		with open(self.old_file + '23') as fp:
+			lines = fp.readlines()
+			for index, line in enumerate(lines):
+				features = line.split('\t')
+				reviewer_id = features[0]
+				review_txt += lines[index].replace('\n', '') + '\t' + str(reviewers[reviewer_id]['avg_rating']) +'\n'
+
+				
+		with open(self.new_file + '24', 'w') as fp:
+			fp.write(review_txt)
+
+	def save_f25(self):
+		review_txt = ""
+		reviewer_rating_list = self.fu.get_column_list([0,5])
+		reviewers = {}
+		for reviewer_rating in reviewer_rating_list:
+			reviewer_id = reviewer_rating[0]
+			rating = reviewer_rating[1]
+			if not reviewers.has_key(reviewer_id):
+				reviewers[reviewer_id] = {'ratings': [], 'avg_rating': 0.0, 'std_rating': 0.0}
+			reviewers[reviewer_id]['ratings'].append(float(rating))
+
+		for reviewer_id in reviewers.keys():
+			ratings = reviewers[reviewer_id]['ratings']
+			reviewers[reviewer_id]['avg_rating'] = sum(ratings) / len(ratings)
+			
+
+		for reviewer_id in reviewers.keys():
+			ratings = reviewers[reviewer_id]['ratings']
+			avg_rating = reviewers[reviewer_id]['avg_rating']
+			std_rating = sum([ (rating - avg_rating)**2 for rating in ratings ])
+			reviewers[reviewer_id]['std_rating'] = std_rating
+
+		with open(self.old_file + '24') as fp:
+			lines = fp.readlines()
+			for index, line in enumerate(lines):
+				features = line.split('\t')
+				reviewer_id = features[0]
+				review_txt += lines[index].replace('\n', '') + '\t' + str(reviewers[reviewer_id]['std_rating']) +'\n'
+
+				
+		with open(self.new_file + '25', 'w') as fp:
+			fp.write(review_txt)
+
 if __name__ == "__main__":
 	fea = Feature('../AmazonDataBackup/reviewsNew/reviews.features', '../AmazonDataBackup/reviewsNew/reviews.features' ,filename='../AmazonDataBackup/reviewsNew/reviewsNew.mp')
 	# fea.save_reviewerid()
@@ -477,6 +592,10 @@ if __name__ == "__main__":
 	# fea.save_f18()
 	# fea.save_f19()
 	# fea.save_f20()
-	fea.save_f21()
+	# fea.save_f21()
+	# fea.save_f22()
+	# fea.save_f23()
+	# fea.save_f24()
+	fea.save_f25()
 
 
