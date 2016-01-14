@@ -1,10 +1,11 @@
-import numpy as np
+# import numpy as np
 from file_util import FileUtil
 import datetime
 import operator
 from dateutil.parser import parse
 import re, math
 from collections import Counter
+from summary_plot import jaccard_distance, get_2_grams
 
 def rank_dict(dict, reverse):
 	# dict = {'product1': {0: 'March 13, 2004', 2: 'September 23, 2002', 5: 'September 23, 2008'}, 'product2': {1: 'September 21, 2004', 4: 'November 13, 2004', 3: 'November 13, 2002'}}
@@ -887,8 +888,34 @@ class Feature:
 		with open(self.new_file + '36', 'w') as fp:
 			fp.write(review_txt)
 
+	def save_labels(self):
+		review_txt = ""
+		content_list = self.fu.get_content_list()
+		label_list = []
+		content_len = len(content_list)
+		for x in xrange(0,content_len):
+			label_list.append(0)
+		print 'start labeling'
+		for i in xrange(0,content_len):
+			grams_a = get_2_grams(content_list[i])
+			for j in xrange(i+1,content_len):
+				grams_b = get_2_grams(content_list[j])
+				sim = jaccard_distance(grams_a, grams_b)
+				if sim >= 0.9:
+					print "sim is : " , sim
+					label_list[i] = 1
+					label_list[j] = 1
+		with open(self.old_file + '36') as fp:
+			lines = fp.readlines()
+			for index, line in enumerate(lines):
+				product_id = product_list[index]
+				review_txt += lines[index].replace('\n', '') + '\t' + str(label_list[index]) +'\n'
+				
+		with open(self.new_file + '37', 'w') as fp:
+			fp.write(review_txt)
+
 if __name__ == "__main__":
-	fea = Feature('../AmazonDataBackup/reviewsNew/reviews.features', '../AmazonDataBackup/reviewsNew/reviews.features' ,filename='../AmazonDataBackup/reviewsNew/reviewsNew.mp')
+	fea = Feature('../AmazonDataBackup/reviewsNew/reviews.features', '../AmazonDataBackup/reviewsNew/reviews.features', filename='../AmazonDataBackup/reviewsNew/reviewsNew.mp')
 	# fea.save_reviewerid()
 	# fea.save_f1()
 	# fea.save_f2()
@@ -926,5 +953,4 @@ if __name__ == "__main__":
 	# fea.save_f34()
 	# fea.save_f35()
 	# fea.save_f36()
-
-
+	fea.save_labels()
