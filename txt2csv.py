@@ -1,7 +1,7 @@
 import csv
 
-txt_file = r"MProductReviewsLatest.txt"
-csv_file = r"MProductReviewsLatest.csv"
+txt_file = r"test_data.txt"
+csv_file = r"test_data.csv"
 
 # use 'with' if the program isn't going to immediately terminate
 # so you don't leave files open

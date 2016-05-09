@@ -891,15 +891,20 @@ class Feature:
 	def save_labels(self):
 		review_txt = ""
 		content_list = self.fu.get_content_list()
+		print 'get content list'
+		grams_list = []
+		for content in content_list:
+			grams_list.append(get_2_grams(content))
+		print 'get grams list'
 		label_list = []
 		content_len = len(content_list)
 		for x in xrange(0,content_len):
 			label_list.append(0)
 		print 'start labeling'
 		for i in xrange(0,content_len):
-			grams_a = get_2_grams(content_list[i])
+			grams_a = grams_list[i]
 			for j in xrange(i+1,content_len):
-				grams_b = get_2_grams(content_list[j])
+				grams_b = grams_list[j]
 				sim = jaccard_distance(grams_a, grams_b)
 				if sim >= 0.9:
 					print "sim is : " , sim
@@ -953,4 +958,4 @@ if __name__ == "__main__":
 	# fea.save_f34()
 	# fea.save_f35()
 	# fea.save_f36()
-	fea.save_labels()
+	# fea.save_labels()
