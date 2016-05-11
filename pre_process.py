@@ -3,19 +3,64 @@ import numpy as ntpath
 from pandas import Series, DataFrame
 import pandas as pd
 import nltk
+import operator
+from collections import Counter
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 class PreProcessWithPandas():
 	def __init__(self, file_name=None):
 		if file_name:
 			self.data = self.load_file(file_name)
+			# self.data = self.data.apply(lambda row: nltk.word_tokenize(row['Body']), axis=1)
 
 	def load_file(self, file_name):
-		return pd.read_csv(file_name)
+		return pd.read_csv(file_name, nrows=5)
+
+	def word_count(self, by='Body'):
+		# bodies = self.data.apply(lambda row: nltk.word_tokenize(row[by]), axis=1)
+		# def lower_zyd(row):
+		# 	return [x.lower() for x in row]
+		# bodies = bodies.apply(lower_zyd)
+		corpus = []
+		for b in self.data[by]:
+			corpus.append(b)
+		corpus = [''.join(corpus)]
+		# corpus = ''.join(corpus)
+		# counts = Counter(corpus)
+		# print counts
+		tf = CountVectorizer(analyzer='word', min_df=0, stop_words='english')
+		counts = tf.fit_transform(corpus)
+		feature_names = tf.get_feature_names()
+		matrix = dict(zip(feature_names, counts.toarray()[0]))
+		sorted_x = sorted(matrix.items(), key=operator.itemgetter(1), reverse=True)
+		print sorted_x
 
 	def tf_idf(self, by='Body'):
-		col = self.data[by]
-		
+		corpus = []
+		for body in self.data[by]:
+			corpus.append(body)
+		corpus = [''.join(corpus)]
+		print corpus
+		tf = TfidfVectorizer(analyzer='word', min_df=0, stop_words='english')
+		tfidf_matrix = tf.fit_transform(corpus)
+		feature_names = tf.get_feature_names()
+		# tf_idf = self.data.apply(lambda row: nltk.word_tokenize(row[by]), axis=1)
+		return tfidf_matrix, feature_names
 
+	def test(self):
+		corpus = []
+		a = 'The game of life is a game of everlasting learning'
+		b = 'The unexamined life is not worth living'
+		c = 'Never stop learning'
+		corpus.append(a)
+		corpus.append(b)
+		corpus.append(c)
+		# tf = TfidfVectorizer(analyzer='word', min_df=0, stop_words='english')
+		tf = CountVectorizer(analyzer='word', min_df=0, stop_words='english')
+		tfidf_matrix = tf.fit_transform(corpus)
+		feature_names = tf.get_feature_names()
+		return tfidf_matrix, feature_names
 class PreProcessForTxt():
 
 	def get_file_line(self, file_name):
@@ -125,6 +170,5 @@ class PreProcessForTxt():
 					count += 1
 
 if __name__ == '__main__':
-	data_process = PreProcessWithPandas('test_data.csv')
-	data = data_process.data
-	print data.index
+	data_process = PreProcessWithPandas('../AmazonDataBackup/MProductReviewsLatest.csv')
+	data_process.word_count()	
