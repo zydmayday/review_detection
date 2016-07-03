@@ -144,14 +144,18 @@ def word_useful_score(l, sum, alpha=0.5):
 
 def cloud_word(file_name):
 	wd = pd.read_csv(file_name, sep='\t')
-	wd_sort = wd.sort(['score'], False).ix[:, 0]
-	words = ' '.join(list(wd_sort))
+	wd_sort = wd.sort_values(by=['score'], ascending=False).ix[:100, [0, 6, 7]]
+	words = []
+	for i, w in wd_sort.iterrows():
+		for j in range(int(w['score'])):
+			words.append(w[0])
+	words = ' '.join([str(w) for w in words])
 	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(words)
 	plt.figure()
 	plt.imshow(wordcloud)
 	plt.axis("off")
 	# plt.show()
-	plt.savefig(file_name.split['.'][0] + 'png')
+	plt.savefig(file_name.split('.')[0] + 'png')
 
 if __name__ == '__main__':
 	# list = [0.45,0.45,0.05,0.03,0.02]
