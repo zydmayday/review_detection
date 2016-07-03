@@ -10,8 +10,6 @@ import unicodedata
 import datetime
 import numpy as np
 from math import *
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 
 
 NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
@@ -48,7 +46,7 @@ def pos_tag(file_name, suffix='_POStagged', fast=False, sep=','):
 	reviews = pd.read_csv(file_name, sep=sep)
 	# calculate_time(start)
 	if fast:
-		reviews['postagged_body'] = reviews['Body'].map(lambda x: nltk.pos_tag([w for w in RegexpTokenizer(r'\w+').tokenize(str(x)) if w.lower() not in stopwords.words('english')]))
+		reviews['postagged_body'] = reviews['Body'].map(lambda x: nltk.pos_tag([w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x)) if w.lower() not in stopwords.words('english')]))
 		# reviews['postagged_body'] = reviews['Body'].map(lambda x: nltk.pos_tag(nltk.tokenize(str(x))))
 	else:
 		reviews['postagged_body'] = reviews['Body'].map(lambda x: TextBlob(str(x), pos_tagger=PerceptronTagger()).tags)
@@ -157,6 +155,16 @@ def cloud_word(file_name):
 	# plt.show()
 	plt.savefig(file_name.split('.')[0] + 'png')
 
+def review_score(file_name, wd_file_name, suffix='_score'):
+	rd = pd.read_csv(file_name, sep='\t')
+	wd = pd.read_csv(wd_file_name, sep='\t')
+	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
+	def s(wd, l):
+		ss = [float(wd.ix[wd['name']==w, 'score']) for w in l if not wd.ix[wd['name']==w, 'score'].empty]
+		return sum(ss)
+	rd['score'] = rd['Body'].map(lambda x: [w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x))]).map(lambda x: s(wd, x))
+	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
+
 if __name__ == '__main__':
 	# list = [0.45,0.45,0.05,0.03,0.02]
 	# print word_useful_score(list, max_indexs)
@@ -170,6 +178,7 @@ if __name__ == '__main__':
 	# lemmatize('test_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
-	cloud_word('test_POStagged_lemmatized_wordfreq.csv')
+	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
+	review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
 
 
