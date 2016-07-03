@@ -10,7 +10,7 @@ import unicodedata
 import datetime
 
 
-NEED_PO	 = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
+NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
 
 def remove_extra_tags(tags_list):
 	return_tags_list = []
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 	# max_indexs = get_max_indexs(list)
 	# print word_useful_score(list, max_indexs)
 	# pos_tag('/home/data/amazon/zyd/data_5w.csv', fast=True)
-	pos_tag('/home/data/amazon/zyd/data_100.csv', fast=True)
+	pos_tag('test.csv', fast=True)
 	# pos_tag('/home/data/amazon/zyd/MProductReviewsLatest_10.csv', fast=True)
 	# lemmatize('/home/data/amazon/unicode_reviews_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/unicode_reviews_POStagged_lemmatized.csv')
