@@ -12,7 +12,8 @@ import numpy as np
 from math import *
 
 
-NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
+# NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
+NEED_POS = ['JJ', 'JJR', 'JJS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
 
 def remove_extra_tags(tags_list):
 	return_tags_list = []
@@ -128,7 +129,7 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t'):
 	wfq_mx.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 	# calculate_time(start)
 
-def word_useful_score(l, sum, alpha=0.5):
+def word_useful_score(l, sum, alpha=0.1):
 	max_indexs = [i for i, j in enumerate(l) if j == max(l)]
 	score = 0.0
 	for m_i in max_indexs:
@@ -159,10 +160,12 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd = pd.read_csv(file_name, sep='\t')
 	wd = pd.read_csv(wd_file_name, sep='\t')
 	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
+	words = list(wd['name'])
 	def s(wd, l):
-		ss = [float(wd.ix[wd['name']==w, 'score']) for w in l if not wd.ix[wd['name']==w, 'score'].empty]
-		return sum(ss)
-	rd['score'] = rd['Body'].map(lambda x: [w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x))]).map(lambda x: s(wd, x))
+		score = sum([float(wd.ix[wd['name']==w, 'score']) for w in l if w in words]) / len(l)
+		print l, score
+		return score
+	rd['score'] = rd['Body'].map(lambda x: s(wd, x))
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
