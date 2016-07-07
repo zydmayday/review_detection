@@ -45,9 +45,13 @@ def pos_tag(file_name, suffix='_POStagged', fast=False, sep=','):
 	# file_name = '/home/data/amazon/testReviews.csv'
 	file_name = file_name
 	reviews = pd.read_csv(file_name, sep=sep)
+	def w(x):
+		pw = nltk.pos_tag([w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x)) if w.lower() not in stopwords.words('english')])
+		print pw
+		return pw
 	# calculate_time(start)
 	if fast:
-		reviews['postagged_body'] = reviews['Body'].map(lambda x: nltk.pos_tag([w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x)) if w.lower() not in stopwords.words('english')]))
+		reviews['postagged_body'] = reviews['Body'].map(lambda x: w(x))
 		# reviews['postagged_body'] = reviews['Body'].map(lambda x: nltk.pos_tag(nltk.tokenize(str(x))))
 	else:
 		reviews['postagged_body'] = reviews['Body'].map(lambda x: TextBlob(str(x), pos_tagger=PerceptronTagger()).tags)
@@ -157,31 +161,33 @@ def cloud_word(file_name):
 	plt.savefig(file_name.split('.')[0] + 'png')
 
 def review_score(file_name, wd_file_name, suffix='_score'):
-	rd = pd.read_csv(file_name, sep='\t')
+	rd = pd.read_csv(file_name)
 	wd = pd.read_csv(wd_file_name, sep='\t')
 	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
 	words = list(wd['name'])
 	def s(wd, l):
+		print l
 		score = sum([float(wd.ix[wd['name']==w, 'score']) for w in l if w in words]) / len(l)
-		print l, score
+		print score
 		return score
-	rd['score'] = rd['Body'].map(lambda x: s(wd, x))
+	rd['score'] = rd['Body'].map(lambda x: s(wd, [w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x))]))
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
 	# list = [0.45,0.45,0.05,0.03,0.02]
 	# print word_useful_score(list, max_indexs)
-	# pos_tag('/home/data/amazon/zyd/data_5w.csv', fast=True)
+	# pos_tag('data_5w.csv', fast=True)
 	# pos_tag('test.csv', fast=True)
 	# pos_tag('test.csv', fast=True, sep='\t')
 	# pos_tag('/home/data/amazon/zyd/data_100.csv', fast=True)
 	# pos_tag('/home/data/amazon/zyd/MProductReviewsLatest_10.csv', fast=True)
-	# lemmatize('/home/data/amazon/zyd/data_5w_POStagged.csv', sep='\t')
+	# lemmatize('data_5w_POStagged.csv', sep='\t')
 	# lemmatize('/home/data/amazon/zyd/data_100_POStagged.csv', sep='\t')
 	# lemmatize('test_POStagged.csv', sep='\t')
-	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
+	# word_freq('data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
 	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
-	review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
+	# review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
+	review_score('data_5w.csv', 'data_5w_POStagged_lemmatized_wordfreq.csv')
 
 
