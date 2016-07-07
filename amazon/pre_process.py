@@ -10,6 +10,9 @@ import unicodedata
 import datetime
 import numpy as np
 from math import *
+from scipy.misc import imread
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
 
 
 # NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
@@ -77,7 +80,7 @@ def lemmatize(file_name, suffix='_lemmatized', sep='\t'):
 	reviews['lemmatized_body'] = reviews['postagged_body_cleaned'].map(lambda x: l(x))
 	reviews.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
-def word_freq(file_name, suffix='_wordfreq', sep='\t'):
+def word_freq(file_name, suffix='_wordfreq', sep='\t', threshold=.5):
 	print "start word_freq"
 	# start = datetime.datetime.now()
 	# print start
@@ -123,17 +126,19 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t'):
 	for i, r in wfq_mx.iterrows():
 		word_sum = wfq_mx.ix[i].sum()
 		# wfq_mx.ix[i] = wfq_mx.ix[i]/word_sum
-		w_s.append(word_useful_score(list(wfq_mx.ix[i]), word_sum))
+		w_s.append(word_useful_score(list(wfq_mx.ix[i])))
 		w_sum.append(word_sum)
 
 	wfq_mx['score'] = w_s
 	wfq_mx['sum'] = w_sum
-
+	wfq_mx = wfq_mx.sort(columns='sum').ix[-int(len(w_s) * threshold):,:]
 	print wfq_mx
 	wfq_mx.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 	# calculate_time(start)
 
-def word_useful_score(l, sum, alpha=0.1):
+def word_useful_score(l, alpha=0.5):
+	def sigmoid(x):
+		return 1 / (1 + exp(-x))
 	max_indexs = [i for i, j in enumerate(l) if j == max(l)]
 	score = 0.0
 	for m_i in max_indexs:
@@ -143,22 +148,47 @@ def word_useful_score(l, sum, alpha=0.1):
 		for i, s in enumerate(l):
 			# print score, '-= abs(', i, '-', m_i, ') *', s, '*', alpha 
 			score -= abs(i - m_i) * s * alpha
-	return score / len(max_indexs) / log(sum+1)
+	score = score / len(max_indexs)
+	return sigmoid(score) - 0.5
 
-def cloud_word(file_name):
+def cloud_word_for_words(file_name):
 	wd = pd.read_csv(file_name, sep='\t')
-	wd_sort = wd.sort(columns=['score'], ascending=False).ix[:100, [0, 6, 7]]
 	words = []
-	for i, w in wd_sort.iterrows():
+	for i, w in wd.iterrows():
 		for j in range(int(w['score'])):
-			words.append(w[0])
+			words.append(w['name'])
 	words = ' '.join([str(w) for w in words])
-	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(words)
+	wordcloud = WordCloud(background_color='white', max_words=200,  
+						  width=1800, height=1000, relative_scaling=.5,
+						  max_font_size=200, stopwords=STOPWORDS).generate(words)
 	plt.figure()
 	plt.imshow(wordcloud)
 	plt.axis("off")
 	# plt.show()
-	plt.savefig(file_name.split('.')[0] + 'png')
+	plt.savefig(file_name.split('.')[0] + '.png')
+
+def cloud_word_with_mask(file_name):
+	text = open(file_name).read()
+	# read the mask / color image
+	# amazon_coloring = imread('amazon-logo_grey.png')
+
+	wc = WordCloud(background_color="white", max_words=200, #mask=amazon_coloring,
+	               stopwords=STOPWORDS.add("said"),
+	               max_font_size=200, random_state=42, width=1800, height=1000)
+	# generate word cloud
+	wc.generate(text)
+
+	# create coloring from image
+	# image_colors = ImageColorGenerator(amazon_coloring)
+
+	# recolor wordcloud and show
+	# we could also give color_func=image_colors directly in the constructor
+	# plt.imshow(wc.recolor(color_func=image_colors))
+	plt.figure()
+	plt.imshow(wc)
+	plt.axis("off")
+	# plt.show()
+	plt.savefig(file_name.split('.')[0] + '.png')
 
 def collect_text_for_cw(file_name='data_5w_POStagged_lemmatized_score.csv', type='low'):
 	rd = pd.read_csv(file_name, sep='\t')
@@ -173,10 +203,11 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd = pd.read_csv(file_name, sep='\t')
 	wd = pd.read_csv(wd_file_name, sep='\t')
 	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
+	words = list(wd['name'])
 	# rd['lemmatized_body'] = rd['lemmatized_body'].map(lambda x: ast.literal_eval(x))
 	def s(wd, l):
 		# print [w for w in l]
-		nume = sum([float(wd.ix[wd['name']==w, 'score']) for w in ast.literal_eval(l)])
+		nume = sum([float(wd.ix[wd['name']==w, 'score']) for w in ast.literal_eval(l) if w in words])
 		deno = len(str(rd.ix[rd['lemmatized_body'] == l, 'Body'].values[0]).split())
 		score = nume / deno
 		print l, score
@@ -186,8 +217,8 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
-	# list = [0.45,0.45,0.05,0.03,0.02]
-	# print word_useful_score(list, max_indexs)
+	# list = [0.2,0.2,0.2,0.2,0.2]
+	# print word_useful_score(list, 1)
 	# pos_tag('data_5w.csv', fast=True)
 	# pos_tag('test.csv', fast=True)
 	# pos_tag('test_100.csv', fast=True, sep='\t')
@@ -198,12 +229,12 @@ if __name__ == '__main__':
 	# lemmatize('test_POStagged.csv', sep='\t')
 	# word_freq('data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
-	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
+	# cloud_word_for_words('high_words.csv')
 	# review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
 	# review_score('data_5w_POStagged_lemmatized.csv', 'data_5w_POStagged_lemmatized_wordfreq.csv')
 	# lemmatize('test_100_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_100_POStagged_lemmatized.csv')
-	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
-	# review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
-	collect_text_for_cw(type='high')
+	# cloud_word_with_mask('high.txt')
+	review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
+	# collect_text_for_cw(type='high')
