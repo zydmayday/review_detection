@@ -85,16 +85,15 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t'):
 	for i, c in enumerate(cb):
 		cb_temp.append([(w, rate[i]) for w in ast.literal_eval(c)])
 	reviews['lemmatized_body'] = cb_temp
-		# cb[i] = [(w, rate[i]) for w in c]
 	# calculate_time(start)
 	# get the corpus of all reviews, lists of all words with label
+	'''--------------------------------------------------------'''
 	cop_wl = []
-	for b in cb:
+	for b in cb_temp:
 		# change the unicode data to the raw string
-		for i, w in enumerate(b):
-			if type(w) == unicode:
-				b[i] = unicodedata.normalize('NFKD', w).encode('utf-8','replace')
+		# cop_wl += [(unicodedata.normalize('NFKD', w[0]).encode('utf-8','replace'), w[1]) for w in b if type(w[0])==unicode]
 		cop_wl += b
+	'''--------------------------------------------------------'''
 	# calculate_time(start)
 	# word frequency of the corpus with label
 	wfq = nltk.FreqDist(cop_wl)
@@ -126,6 +125,7 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t'):
 	wfq_mx['score'] = w_s
 	wfq_mx['sum'] = w_sum
 
+	print wfq_mx
 	wfq_mx.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 	# calculate_time(start)
 
@@ -160,12 +160,16 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd = pd.read_csv(file_name, sep='\t')
 	wd = pd.read_csv(wd_file_name, sep='\t')
 	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
-	words = list(wd['name'])
+	# rd['lemmatized_body'] = rd['lemmatized_body'].map(lambda x: ast.literal_eval(x))
 	def s(wd, l):
-		score = sum([float(wd.ix[wd['name']==w, 'score']) for w in l if w in words]) / len(l)
+		# print [w for w in l]
+		nume = sum([float(wd.ix[wd['name']==w, 'score']) for w in ast.literal_eval(l)])
+		deno = len(rd.ix[rd['lemmatized_body'] == l, 'Body'].values[0])
+		score = nume / deno
 		print l, score
+		# print [float(wd.ix[wd['name']==w, 'score']) for w in l], score
 		return score
-	rd['score'] = rd['Body'].map(lambda x: s(wd, x))
+	rd['score'] = rd['lemmatized_body'].map(lambda x: s(wd, x))
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
@@ -173,15 +177,13 @@ if __name__ == '__main__':
 	# print word_useful_score(list, max_indexs)
 	# pos_tag('/home/data/amazon/zyd/data_5w.csv', fast=True)
 	# pos_tag('test.csv', fast=True)
-	# pos_tag('test.csv', fast=True, sep='\t')
+	# pos_tag('test_100.csv', fast=True, sep='\t')
 	# pos_tag('/home/data/amazon/zyd/data_100.csv', fast=True)
 	# pos_tag('/home/data/amazon/zyd/MProductReviewsLatest_10.csv', fast=True)
 	# lemmatize('/home/data/amazon/zyd/data_5w_POStagged.csv', sep='\t')
 	# lemmatize('/home/data/amazon/zyd/data_100_POStagged.csv', sep='\t')
-	# lemmatize('test_POStagged.csv', sep='\t')
+	# lemmatize('test_100_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
-	# word_freq('test_POStagged_lemmatized.csv')
+	# word_freq('test_100_POStagged_lemmatized.csv')
 	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
-	review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
-
-
+	review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
