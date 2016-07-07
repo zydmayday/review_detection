@@ -166,11 +166,6 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	wd.columns = ['name', 1,2,3,4,5, 'score', 'sum']
 	# rd['lemmatized_body'] = rd['lemmatized_body'].map(lambda x: ast.literal_eval(x))
 	def s(wd, l):
-		print l
-		score = sum([float(wd.ix[wd['name']==w, 'score']) for w in l if w in words]) / len(l)
-		print score
-		return score
-	rd['score'] = rd['Body'].map(lambda x: s(wd, [w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x))]))
 		# print [w for w in l]
 		nume = sum([float(wd.ix[wd['name']==w, 'score']) for w in ast.literal_eval(l)])
 		deno = len(rd.ix[rd['lemmatized_body'] == l, 'Body'].values[0])
@@ -184,15 +179,15 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 if __name__ == '__main__':
 	# list = [0.45,0.45,0.05,0.03,0.02]
 	# print word_useful_score(list, max_indexs)
-	# pos_tag('data_5w.csv', fast=True)
+	pos_tag('data_5w.csv', fast=True)
 	# pos_tag('test.csv', fast=True)
 	# pos_tag('test_100.csv', fast=True, sep='\t')
 	# pos_tag('/home/data/amazon/zyd/data_100.csv', fast=True)
 	# pos_tag('/home/data/amazon/zyd/MProductReviewsLatest_10.csv', fast=True)
-	# lemmatize('data_5w_POStagged.csv', sep='\t')
+	lemmatize('data_5w_POStagged.csv', sep='\t')
 	# lemmatize('/home/data/amazon/zyd/data_100_POStagged.csv', sep='\t')
 	# lemmatize('test_POStagged.csv', sep='\t')
-	# word_freq('data_5w_POStagged_lemmatized.csv')
+	word_freq('data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
 	# cloud_word('test_POStagged_lemmatized_wordfreq.csv')
 	# review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
