@@ -11,8 +11,8 @@ import datetime
 import numpy as np
 from math import *
 from scipy.misc import imread
-# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-# import matplotlib.pyplot as plt
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
 
 
 # NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
@@ -141,8 +141,10 @@ def word_useful_score(l, alpha=0.5):
 		print x
 		if float(x) is float('nan'):
 			return 0.5
-		if abs(x) > 700:
-			return 0
+		if x > 700:
+			return 1.0
+		if x < -700:
+			return 0.0
 		return 1 / (1 + exp(-x))
 	max_indexs = [i for i, j in enumerate(l) if j == max(l)]
 	score = 0.0
@@ -158,11 +160,15 @@ def word_useful_score(l, alpha=0.5):
 
 def cloud_word_for_words(file_name):
 	wd = pd.read_csv(file_name, sep='\t')
+	wd.columns = ['name', 1,2,3,4,5,'score', 'sum']
+	wd = wd.sort_values(by='score').reset_index().ix[len(wd)-1000:len(wd),['name', 'score']]
+	print wd
 	words = []
 	for i, w in wd.iterrows():
-		for j in range(int(w['score'])):
-			words.append(w['name'])
-	words = ' '.join([str(w) for w in words])
+		for j in range(int( (w['score'] + 0.5) * 100 )):
+			words.append(str(w['name']))
+	print words[:10]
+	words = ' '.join(words)
 	wordcloud = WordCloud(background_color='white', max_words=200,  
 						  width=1800, height=1000, relative_scaling=.5,
 						  max_font_size=200, stopwords=STOPWORDS).generate(words)
@@ -234,13 +240,14 @@ if __name__ == '__main__':
 	# lemmatize('test_POStagged.csv', sep='\t')
 	# word_freq('data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
-	# cloud_word_for_words('high_words.csv')
+	cloud_word_for_words('high_words.csv')
 	# review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
 	# review_score('data_5w_POStagged_lemmatized.csv', 'data_5w_POStagged_lemmatized_wordfreq.csv')
 	# lemmatize('test_100_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_100_POStagged_lemmatized.csv')
-	# cloud_word_with_mask('high.txt')
+	cloud_word_with_mask('high.txt')
+	cloud_word_with_mask('low.txt')
 	# review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
-	collect_text_for_cw(type='high')
-	collect_text_for_cw(type='low')
+	# collect_text_for_cw(type='high')
+	# collect_text_for_cw(type='low')
