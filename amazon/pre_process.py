@@ -11,8 +11,8 @@ import datetime
 import numpy as np
 from math import *
 from scipy.misc import imread
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-import matplotlib.pyplot as plt
+# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+# import matplotlib.pyplot as plt
 
 
 # NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
@@ -46,10 +46,9 @@ def pos_tag(file_name, suffix='_POStagged', fast=False, sep=','):
 	# start = datetime.datetime.now()
 	print "start pos_tag"
 	# file_name = '/home/data/amazon/testReviews.csv'
-	file_name = file_name
 	reviews = pd.read_csv(file_name, sep=sep)
 	def w(x):
-		pw = nltk.pos_tag([w.lower() for w in RegexpTokenizer(r'\w+').tokenize(str(x)) if w.lower() not in stopwords.words('english')])
+		pw = nltk.pos_tag(RegexpTokenizer(r'[a-zA-Z]+').tokenize(str(x).lower()))
 		print pw
 		return pw
 	# calculate_time(start)
@@ -60,7 +59,7 @@ def pos_tag(file_name, suffix='_POStagged', fast=False, sep=','):
 		reviews['postagged_body'] = reviews['Body'].map(lambda x: TextBlob(str(x), pos_tagger=PerceptronTagger()).tags)
 
 	# calculate_time(start)
-	reviews['postagged_body_cleaned'] = reviews['postagged_body'].map(lambda x: remove_extra_tags(x))
+	# reviews['postagged_body_cleaned'] = reviews['postagged_body'].map(lambda x: remove_extra_tags(x))
 	# calculate_time(start)
 	reviews.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 	# reviews.to_csv('/home/data/amazon/testReviewsPOStagged.csv', sep='\t')
@@ -73,25 +72,36 @@ def lemmatize(file_name, suffix='_lemmatized', sep='\t'):
 		lmtzr = WordNetLemmatizer()
 		return_tags_list = []
 		for t in list(tags_list):
-			return_tags_list.append(lmtzr.lemmatize(t[0],get_wordnet_pos(t[1]))) 
+			if get_wordnet_pos(t[1]):
+				return_tags_list.append(lmtzr.lemmatize(t[0],get_wordnet_pos(t[1]))) 
+			else:
+				return_tags_list.append(lmtzr.lemmatize(t[0])) 
 		return return_tags_list
 
 	reviews = pd.read_csv(file_name, error_bad_lines=False, sep=sep)
-	reviews['lemmatized_body'] = reviews['postagged_body_cleaned'].map(lambda x: l(x))
+	reviews['lemmatized_body'] = reviews['postagged_body'].map(lambda x: l(x))
 	reviews.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
+
+def remove_stopwords(file_name, suffix='_stopword', sep='\t'):
+	print 'start stopwords'
+	reviews = pd.read_csv(file_name, sep=sep)
+	# still change postagged_body
+	reviews['stopword_body'] = reviews['lemmatized_body'].map(lambda x: [w for w in ast.literal_eval(x) if w[0] not in stopwords.words('english')])
+	reviews.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
+
 
 def word_freq(file_name, suffix='_wordfreq', sep='\t', threshold=.5):
 	print "start word_freq"
 	# start = datetime.datetime.now()
 	# print start
 	reviews = pd.read_csv(file_name, error_bad_lines=False, sep=sep)
-	cb = reviews['lemmatized_body']
+	cb = reviews['stopword_body']
 	rate = reviews['Rating']
 	# label all words with the rating
 	cb_temp = []
 	for i, c in enumerate(cb):
 		cb_temp.append([(w, rate[i]) for w in ast.literal_eval(c)])
-	reviews['lemmatized_body'] = cb_temp
+	reviews['stopword_body'] = cb_temp
 	# calculate_time(start)
 	# get the corpus of all reviews, lists of all words with label
 	'''--------------------------------------------------------'''
@@ -201,7 +211,7 @@ def cloud_word_with_mask(file_name):
 	# plt.show()
 	plt.savefig(file_name.split('.')[0] + '.png')
 
-def collect_text_for_cw(file_name='data_5w_POStagged_lemmatized_score.csv', type='low'):
+def collect_text_for_cw(file_name='data_5w_POStagged_lemmatized_stopword_score.csv', type='low'):
 	rd = pd.read_csv(file_name, sep='\t')
 	rd = rd.sort(columns='score', ascending=True).reset_index()
 	with open(type+'.txt', 'w') as fw:
@@ -219,35 +229,39 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	def s(wd, l):
 		# print [w for w in l]
 		nume = sum([float(wd.ix[wd['name']==w, 'score']) for w in ast.literal_eval(l) if w in words])
-		deno = len(str(rd.ix[rd['lemmatized_body'] == l, 'Body'].values[0]).split())
+		deno = len(str(rd.ix[rd['stopword_body'] == l, 'Body'].values[0]).split())
 		score = nume / deno
 		print l, score
 		# print [float(wd.ix[wd['name']==w, 'score']) for w in l], score
 		return score
-	rd['score'] = rd['lemmatized_body'].map(lambda x: s(wd, x))
+	rd['score'] = rd['stopword_body'].map(lambda x: s(wd, x))
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
+	# pos_tag('data_5w.csv', fast=True)
+	# lemmatize('data_5w_POStagged.csv', sep='\t')
+	# remove_stopwords('data_5w_POStagged_lemmatized.csv')
+	# word_freq('data_5w_POStagged_lemmatized_stopword.csv')
+	# review_score('data_5w_POStagged_lemmatized_stopword.csv', 'data_5w_POStagged_lemmatized_stopword_wordfreq.csv')
+	
+	collect_text_for_cw(type='high')
+	collect_text_for_cw(type='low')
+
 	# list = [0.2,0.2,0.2,0.2,0.2]
 	# print word_useful_score(list, 1)
-	# pos_tag('data_5w.csv', fast=True)
+
 	# pos_tag('test.csv', fast=True)
 	# pos_tag('test_100.csv', fast=True, sep='\t')
 	# pos_tag('/home/data/amazon/zyd/data_100.csv', fast=True)
 	# pos_tag('/home/data/amazon/zyd/MProductReviewsLatest_10.csv', fast=True)
-	# lemmatize('data_5w_POStagged.csv', sep='\t')
 	# lemmatize('/home/data/amazon/zyd/data_100_POStagged.csv', sep='\t')
 	# lemmatize('test_POStagged.csv', sep='\t')
-	# word_freq('data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_POStagged_lemmatized.csv')
-	cloud_word_for_words('high_words.csv')
+	# cloud_word_for_words('high_words.csv')
 	# review_score('test.csv', 'test_POStagged_lemmatized_wordfreq.csv')
-	# review_score('data_5w_POStagged_lemmatized.csv', 'data_5w_POStagged_lemmatized_wordfreq.csv')
 	# lemmatize('test_100_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_100_POStagged_lemmatized.csv')
-	cloud_word_with_mask('high.txt')
-	cloud_word_with_mask('low.txt')
+	# cloud_word_with_mask('high.txt')
+	# cloud_word_with_mask('low.txt')
 	# review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
-	# collect_text_for_cw(type='high')
-	# collect_text_for_cw(type='low')
