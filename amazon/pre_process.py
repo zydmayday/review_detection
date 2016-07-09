@@ -11,8 +11,8 @@ import datetime
 import numpy as np
 from math import *
 from scipy.misc import imread
-# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-# import matplotlib.pyplot as plt
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
 
 
 # NEED_POS = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN']
@@ -136,7 +136,7 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t', threshold=.5):
 	for i, r in wfq_mx.iterrows():
 		word_sum = wfq_mx.ix[i].sum()
 		# wfq_mx.ix[i] = wfq_mx.ix[i]/word_sum
-		w_s.append(word_useful_score(list(wfq_mx.ix[i])))
+		w_s.append(word_useful_score(list(wfq_mx.ix[i]), word_sum))
 		w_sum.append(word_sum)
 
 	wfq_mx['score'] = w_s
@@ -146,7 +146,7 @@ def word_freq(file_name, suffix='_wordfreq', sep='\t', threshold=.5):
 	wfq_mx.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 	# calculate_time(start)
 
-def word_useful_score(l, alpha=0.5):
+def word_useful_score(l, sum, alpha=0.5):
 	def sigmoid(x):
 		print x
 		if float(x) is float('nan'):
@@ -156,6 +156,7 @@ def word_useful_score(l, alpha=0.5):
 		if x < -700:
 			return 0.0
 		return 1 / (1 + exp(-x))
+	l = [float(x)/sum for x in l]
 	max_indexs = [i for i, j in enumerate(l) if j == max(l)]
 	score = 0.0
 	for m_i in max_indexs:
@@ -166,7 +167,7 @@ def word_useful_score(l, alpha=0.5):
 			# print score, '-= abs(', i, '-', m_i, ') *', s, '*', alpha 
 			score -= abs(i - m_i) * s * alpha
 	score = score / len(max_indexs)
-	return sigmoid(score) - 0.5
+	return sigmoid(score * log(sum)) - 0.5
 
 def cloud_word_for_words(file_name):
 	wd = pd.read_csv(file_name, sep='\t')
@@ -238,14 +239,17 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
-	# pos_tag('data_5w.csv', fast=True)
-	# lemmatize('data_5w_POStagged.csv', sep='\t')
-	# remove_stopwords('data_5w_POStagged_lemmatized.csv')
-	# word_freq('data_5w_POStagged_lemmatized_stopword.csv')
-	# review_score('data_5w_POStagged_lemmatized_stopword.csv', 'data_5w_POStagged_lemmatized_stopword_wordfreq.csv')
+	pos_tag('test_100.csv', fast=True, sep='\t')
+	lemmatize('test_100_POStagged.csv', sep='\t')
+	remove_stopwords('test_100_POStagged_lemmatized.csv')
+	word_freq('test_100_POStagged_lemmatized_stopword.csv')
+	review_score('test_100_POStagged_lemmatized_stopword.csv', 'test_100_POStagged_lemmatized_stopword_wordfreq.csv')
 	
-	collect_text_for_cw(type='high')
-	collect_text_for_cw(type='low')
+	# collect_text_for_cw(type='high')
+	# collect_text_for_cw(type='low')
+
+	# cloud_word_with_mask('high.txt')
+	# cloud_word_with_mask('low.txt')
 
 	# list = [0.2,0.2,0.2,0.2,0.2]
 	# print word_useful_score(list, 1)
@@ -262,6 +266,4 @@ if __name__ == '__main__':
 	# lemmatize('test_100_POStagged.csv', sep='\t')
 	# word_freq('/home/data/amazon/zyd/data_5w_POStagged_lemmatized.csv')
 	# word_freq('test_100_POStagged_lemmatized.csv')
-	# cloud_word_with_mask('high.txt')
-	# cloud_word_with_mask('low.txt')
 	# review_score(file_name='test_100_POStagged_lemmatized.csv', wd_file_name='test_100_POStagged_lemmatized_wordfreq.csv')
