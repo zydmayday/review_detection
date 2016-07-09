@@ -49,7 +49,7 @@ def pos_tag(file_name, suffix='_POStagged', fast=False, sep=','):
 	reviews = pd.read_csv(file_name, sep=sep)
 	def w(x):
 		pw = nltk.pos_tag(RegexpTokenizer(r'[a-zA-Z]+').tokenize(str(x).lower()))
-		print pw
+		# print pw
 		return pw
 	# calculate_time(start)
 	if fast:
@@ -85,8 +85,12 @@ def lemmatize(file_name, suffix='_lemmatized', sep='\t'):
 def remove_stopwords(file_name, suffix='_stopword', sep='\t'):
 	print 'start stopwords'
 	reviews = pd.read_csv(file_name, sep=sep)
+	stw = stopwords.words('english')
 	# still change postagged_body
-	reviews['stopword_body'] = reviews['lemmatized_body'].map(lambda x: [w for w in ast.literal_eval(x) if w[0] not in stopwords.words('english')])
+	def rm_st(x):
+		l = [w for w in ast.literal_eval(x) if not w in stw]
+		return l
+	reviews['stopword_body'] = reviews.ix[1:1,'lemmatized_body'].map(lambda x: rm_st(x))
 	reviews.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 
@@ -239,11 +243,11 @@ def review_score(file_name, wd_file_name, suffix='_score'):
 	rd.to_csv(file_name.split('.')[0] + suffix + '.' + file_name.split('.')[1], sep='\t')
 
 if __name__ == '__main__':
-	pos_tag('test_100.csv', fast=True, sep='\t')
-	lemmatize('test_100_POStagged.csv', sep='\t')
+	# pos_tag('test_100.csv', fast=True, sep='\t')
+	# lemmatize('test_100_POStagged.csv', sep='\t')
 	remove_stopwords('test_100_POStagged_lemmatized.csv')
-	word_freq('test_100_POStagged_lemmatized_stopword.csv')
-	review_score('test_100_POStagged_lemmatized_stopword.csv', 'test_100_POStagged_lemmatized_stopword_wordfreq.csv')
+	# word_freq('test_100_POStagged_lemmatized_stopword.csv')
+	# review_score('test_100_POStagged_lemmatized_stopword.csv', 'test_100_POStagged_lemmatized_stopword_wordfreq.csv')
 	
 	# collect_text_for_cw(type='high')
 	# collect_text_for_cw(type='low')
